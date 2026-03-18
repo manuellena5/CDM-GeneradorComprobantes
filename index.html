@@ -274,32 +274,27 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 .btn-share:hover { background: #1ebe5d; }
 .btn-share svg { flex-shrink: 0; }
 @media (max-width: 768px) {
+  /* Botones */
   .btn-share { display: flex; }
   .btn-print-desktop { display: none; }
-  .workspace {
-    grid-template-columns: 1fr;
-  }
+  /* Layout: una columna, preview debajo del formulario */
+  .workspace { grid-template-columns: 1fr; }
+  .form-panel { border-right: none; border-bottom: 1px solid var(--border); }
   .preview-panel { padding: 20px 12px; }
+  /* Comprobante a ancho completo */
   #comprobante { width: 100%; }
+  /* Firmas en columna */
   .comp-firmas { grid-template-columns: 1fr; gap: 12px; }
   .comp-firma + .comp-firma { border-left: none; border-top: 1px solid var(--border); padding-top: 12px; }
+  /* Print tip oculto en mobile */
+  .print-tip { display: none; }
 }
 .share-status {
   font-size: 12px; color: var(--muted); text-align: center;
   margin-top: 8px; min-height: 18px; transition: opacity .3s;
 }
 
-@media (max-width: 768px) {
-  .btn-share { display: flex; }
-  .btn-print-desktop { display: none; }
-  .workspace {
-    grid-template-columns: 1fr;
-  }
-  .preview-panel { padding: 20px 12px; }
-  #comprobante { width: 100%; }
-  .comp-firmas { grid-template-columns: 1fr; gap: 12px; }
-  .comp-firma + .comp-firma { border-left: none; border-top: 1px solid var(--border); padding-top: 12px; }
-}
+
 
 
 /* ── Banner instalación PWA ── */
@@ -470,8 +465,17 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
   <!-- FIRMAS -->
   <p class="section-title">Firmas digitales (se guardan automáticamente)</p>
 
+  <!-- Firma 1 -->
   <div class="firma-block">
-    <div class="firma-block-title">Firma 1</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span class="firma-block-title" style="margin-bottom:0">Firma 1</span>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin:0">
+        <input type="checkbox" id="show-pad-1" checked
+          onchange="togglePad(1,this.checked)"
+          style="width:13px;height:13px;cursor:pointer;accent-color:var(--navy-mid)">
+        <span style="font-size:11px;color:var(--muted)">Mostrar pad</span>
+      </label>
+    </div>
     <div class="row-2">
       <div>
         <label>Nombre</label>
@@ -482,21 +486,32 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         <input type="text" id="f-firma1-cargo" placeholder="Tesorero" oninput="saveFirmas(); render()">
       </div>
     </div>
-    <label style="margin-top:10px">Firma (dibujá con el dedo o el mouse)</label>
-    <div class="firma-canvas-wrap" id="wrap-1">
-      <canvas id="canvas-firma-1"></canvas>
-      <div class="firma-canvas-hint">Dibujá aquí tu firma</div>
-    </div>
-    <div class="firma-btn-row">
-      <button class="firma-btn danger"   onclick="limpiarFirma(1)">Borrar</button>
-      <button class="firma-btn"          onclick="exportarFirma(1)">Exportar PNG</button>
-      <button class="firma-btn success"  onclick="document.getElementById('import-1').click()">Importar PNG</button>
-      <input type="file" id="import-1" class="firma-import-input" accept="image/*" onchange="importarFirma(1,this)">
+    <div id="pad-area-1">
+      <label style="margin-top:10px">Firma (dibujá con el dedo o el mouse)</label>
+      <div class="firma-canvas-wrap" id="wrap-1">
+        <canvas id="canvas-firma-1"></canvas>
+        <div class="firma-canvas-hint">Dibujá aquí tu firma</div>
+      </div>
+      <div class="firma-btn-row">
+        <button class="firma-btn danger"  onclick="limpiarFirma(1)">Borrar</button>
+        <button class="firma-btn"         onclick="exportarFirma(1)">Exportar PNG</button>
+        <button class="firma-btn success" onclick="document.getElementById('import-1').click()">Importar PNG</button>
+        <input type="file" id="import-1" class="firma-import-input" accept="image/*" onchange="importarFirma(1,this)">
+      </div>
     </div>
   </div>
 
+  <!-- Firma 2 -->
   <div class="firma-block">
-    <div class="firma-block-title">Firma 2</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span class="firma-block-title" style="margin-bottom:0">Firma 2</span>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin:0">
+        <input type="checkbox" id="show-pad-2" checked
+          onchange="togglePad(2,this.checked)"
+          style="width:13px;height:13px;cursor:pointer;accent-color:var(--navy-mid)">
+        <span style="font-size:11px;color:var(--muted)">Mostrar pad</span>
+      </label>
+    </div>
     <div class="row-2">
       <div>
         <label>Nombre</label>
@@ -507,21 +522,32 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         <input type="text" id="f-firma2-cargo" placeholder="Secretaria" oninput="saveFirmas(); render()">
       </div>
     </div>
-    <label style="margin-top:10px">Firma</label>
-    <div class="firma-canvas-wrap" id="wrap-2">
-      <canvas id="canvas-firma-2"></canvas>
-      <div class="firma-canvas-hint">Dibujá aquí tu firma</div>
-    </div>
-    <div class="firma-btn-row">
-      <button class="firma-btn danger"   onclick="limpiarFirma(2)">Borrar</button>
-      <button class="firma-btn"          onclick="exportarFirma(2)">Exportar PNG</button>
-      <button class="firma-btn success"  onclick="document.getElementById('import-2').click()">Importar PNG</button>
-      <input type="file" id="import-2" class="firma-import-input" accept="image/*" onchange="importarFirma(2,this)">
+    <div id="pad-area-2">
+      <label style="margin-top:10px">Firma</label>
+      <div class="firma-canvas-wrap" id="wrap-2">
+        <canvas id="canvas-firma-2"></canvas>
+        <div class="firma-canvas-hint">Dibujá aquí tu firma</div>
+      </div>
+      <div class="firma-btn-row">
+        <button class="firma-btn danger"  onclick="limpiarFirma(2)">Borrar</button>
+        <button class="firma-btn"         onclick="exportarFirma(2)">Exportar PNG</button>
+        <button class="firma-btn success" onclick="document.getElementById('import-2').click()">Importar PNG</button>
+        <input type="file" id="import-2" class="firma-import-input" accept="image/*" onchange="importarFirma(2,this)">
+      </div>
     </div>
   </div>
 
+  <!-- Firma 3 -->
   <div class="firma-block">
-    <div class="firma-block-title">Firma 3</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span class="firma-block-title" style="margin-bottom:0">Firma 3</span>
+      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin:0">
+        <input type="checkbox" id="show-pad-3" checked
+          onchange="togglePad(3,this.checked)"
+          style="width:13px;height:13px;cursor:pointer;accent-color:var(--navy-mid)">
+        <span style="font-size:11px;color:var(--muted)">Mostrar pad</span>
+      </label>
+    </div>
     <div class="row-2">
       <div>
         <label>Nombre</label>
@@ -532,20 +558,22 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         <input type="text" id="f-firma3-cargo" placeholder="Presidente" oninput="saveFirmas(); render()">
       </div>
     </div>
-    <label style="margin-top:10px">Firma</label>
-    <div class="firma-canvas-wrap" id="wrap-3">
-      <canvas id="canvas-firma-3"></canvas>
-      <div class="firma-canvas-hint">Dibujá aquí tu firma</div>
-    </div>
-    <div class="firma-btn-row">
-      <button class="firma-btn danger"   onclick="limpiarFirma(3)">Borrar</button>
-      <button class="firma-btn"          onclick="exportarFirma(3)">Exportar PNG</button>
-      <button class="firma-btn success"  onclick="document.getElementById('import-3').click()">Importar PNG</button>
-      <input type="file" id="import-3" class="firma-import-input" accept="image/*" onchange="importarFirma(3,this)">
+    <div id="pad-area-3">
+      <label style="margin-top:10px">Firma</label>
+      <div class="firma-canvas-wrap" id="wrap-3">
+        <canvas id="canvas-firma-3"></canvas>
+        <div class="firma-canvas-hint">Dibujá aquí tu firma</div>
+      </div>
+      <div class="firma-btn-row">
+        <button class="firma-btn danger"  onclick="limpiarFirma(3)">Borrar</button>
+        <button class="firma-btn"         onclick="exportarFirma(3)">Exportar PNG</button>
+        <button class="firma-btn success" onclick="document.getElementById('import-3').click()">Importar PNG</button>
+        <input type="file" id="import-3" class="firma-import-input" accept="image/*" onchange="importarFirma(3,this)">
+      </div>
     </div>
   </div>
 
-  <p class="firma-save-tip">Las firmas se guardan automáticamente en este navegador. Exportalas como PNG para usarlas en otros dispositivos.</p>
+  <p class="firma-save-tip">Nombre y cargo son opcionales. Usá el checkbox para ocultar el pad cuando no lo necesitás.</p>
 
   <div class="btn-group">
     <button class="btn btn-primary btn-print-desktop" onclick="imprimirYavanzar()">Imprimir / Guardar PDF</button>
@@ -1095,8 +1123,29 @@ async function compartirWhatsapp() {
   }
 }
 
+
+// ══ Toggle pad de firma individual ══
+function togglePad(n, show) {
+  const pad = document.getElementById('pad-area-' + n);
+  if (pad) pad.style.display = show ? '' : 'none';
+  localStorage.setItem('cdm_pad' + n + '_visible', show ? '1' : '0');
+}
+
+function loadPadVisibility() {
+  ['1','2','3'].forEach(n => {
+    const saved = localStorage.getItem('cdm_pad' + n + '_visible');
+    if (saved === '0') {
+      const cb  = document.getElementById('show-pad-' + n);
+      const pad = document.getElementById('pad-area-' + n);
+      if (cb)  cb.checked = false;
+      if (pad) pad.style.display = 'none';
+    }
+  });
+}
+
 // ══ Init ══
 loadFromStorage();
+loadPadVisibility();
 render();
 // Inicializar pads de firma después de render
 setTimeout(() => {
