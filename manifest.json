@@ -2,7 +2,7 @@
   "name": "CDM Comprobantes",
   "short_name": "CDM",
   "description": "Comprobantes de pago · Club Deportivo Mitre",
-  "start_url": "./comprobante_mitre_v9.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f2540",
   "theme_color": "#0f2540",
