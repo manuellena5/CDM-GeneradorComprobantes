@@ -797,12 +797,27 @@ function loadFirmaImages() {
   ['1','2','3'].forEach(n => {
     const savedImg = localStorage.getItem('cdm_firma'+n+'_img');
     if (savedImg) {
-      const img = new Image();
+      const canvas = document.getElementById('canvas-firma-'+n);
+      const ctx    = canvas.getContext('2d');
+      const img    = new Image();
       img.onload = () => {
-        const canvas = document.getElementById('canvas-firma-'+n);
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Redibujar respetando el tamaño y DPR actuales del canvas
+        const rect = canvas.getBoundingClientRect();
+        const dpr  = window.devicePixelRatio || 1;
+        // Re-inicializar dimensiones si el canvas aún tiene 0
+        if (canvas.width === 0 || canvas.height === 0) {
+          canvas.width  = rect.width  * dpr;
+          canvas.height = rect.height * dpr;
+          ctx.scale(dpr, dpr);
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Escalar manteniendo proporción dentro del área del canvas
+        const cw = rect.width;
+        const ch = rect.height;
+        const scale = Math.min(cw / img.width, ch / img.height) * 0.9;
+        const dx = (cw - img.width  * scale) / 2;
+        const dy = (ch - img.height * scale) / 2;
+        ctx.drawImage(img, dx, dy, img.width * scale, img.height * scale);
         document.getElementById('wrap-'+n).classList.add('has-sig');
         render();
       };
@@ -810,6 +825,8 @@ function loadFirmaImages() {
     }
   });
 }
+
+// ══ Exportar configuración a JSON ══
 
 function saveFirmas() {
   ['1','2','3'].forEach(n => {
