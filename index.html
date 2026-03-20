@@ -558,11 +558,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
   <div class="firma-block">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <span class="firma-block-title" style="margin-bottom:0">Firma 1 — Tesorero</span>
-      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin:0">
+      <label id="show-pad-wrap-1" style="display:none;align-items:center;gap:5px;cursor:pointer;margin:0">
         <input type="checkbox" id="show-pad-1" checked
           onchange="togglePad(1,this.checked)"
           style="width:13px;height:13px;cursor:pointer;accent-color:var(--navy-mid)">
-        <span style="font-size:11px;color:var(--muted)">Mostrar pad</span>
+        <span style="font-size:11px;color:var(--muted)">Ocultar pad</span>
       </label>
     </div>
     <div class="row-2">
@@ -607,11 +607,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
   <div class="firma-block">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <span class="firma-block-title" style="margin-bottom:0">Firma 2 — Presidente</span>
-      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin:0">
+      <label id="show-pad-wrap-2" style="display:none;align-items:center;gap:5px;cursor:pointer;margin:0">
         <input type="checkbox" id="show-pad-2" checked
           onchange="togglePad(2,this.checked)"
           style="width:13px;height:13px;cursor:pointer;accent-color:var(--navy-mid)">
-        <span style="font-size:11px;color:var(--muted)">Mostrar pad</span>
+        <span style="font-size:11px;color:var(--muted)">Ocultar pad</span>
       </label>
     </div>
     <div class="row-2">
@@ -656,11 +656,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
   <div class="firma-block">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <span class="firma-block-title" style="margin-bottom:0">Firma 3 — Secretario</span>
-      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;margin:0">
+      <label id="show-pad-wrap-3" style="display:none;align-items:center;gap:5px;cursor:pointer;margin:0">
         <input type="checkbox" id="show-pad-3" checked
           onchange="togglePad(3,this.checked)"
           style="width:13px;height:13px;cursor:pointer;accent-color:var(--navy-mid)">
-        <span style="font-size:11px;color:var(--muted)">Mostrar pad</span>
+        <span style="font-size:11px;color:var(--muted)">Ocultar pad</span>
       </label>
     </div>
     <div class="row-2">
@@ -1101,6 +1101,12 @@ function render() {
 function removerFirmaImg(n) {
   document.getElementById('firma-img-area-'+n).style.display = 'none';
   document.getElementById('pad-area-'+n).style.display = '';
+  // Mostrar el checkbox de ocultar pad
+  const cbWrap = document.getElementById('show-pad-wrap-'+n);
+  if (cbWrap) cbWrap.style.display = '';
+  // Resetear checkbox a checked
+  const cb = document.getElementById('show-pad-'+n);
+  if (cb) cb.checked = true;
   // Inicializar el canvas ahora que es visible
   initPad(n);
   render();
