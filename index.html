@@ -252,12 +252,69 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 
 /* ══ PRINT ══ */
 @media print {
-  body { background: white; }
-  .app-header, .form-panel, .preview-label, .print-tip { display: none !important; }
+  /* Tamaño de página y márgenes mínimos */
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  body { background: white; margin: 0; padding: 0; }
+
+  /* Ocultar todo excepto el comprobante */
+  .app-header, .form-panel, .preview-label,
+  .print-tip, #pwa-banner { display: none !important; }
+
   .workspace { display: block; }
-  .preview-panel { padding: 0; background: white; align-items: flex-start; }
-  #comprobante { box-shadow: none; border-radius: 0; width: 100%; }
-  .comp-header, .comp-footer, .comp-firmas { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .preview-panel {
+    padding: 0;
+    background: white;
+    display: block;
+    width: 100%;
+  }
+
+  /* Comprobante compacto: ocupa mitad del ancho, alineado arriba izquierda */
+  #comprobante {
+    box-shadow: none;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    width: 45%;
+    min-width: 200px;
+    float: left;
+    font-size: 11px;
+  }
+
+  /* Escalar tipografía interna */
+  .comp-club-name  { font-size: 13px !important; }
+  .comp-club-sub   { font-size: 10px !important; }
+  .comp-doc-type   { font-size: 9px  !important; }
+  .comp-numero     { font-size: 12px !important; }
+  .comp-fecha      { font-size: 9px  !important; }
+  .comp-jugador-nombre { font-size: 14px !important; }
+  .comp-jugador-sub    { font-size: 10px !important; }
+  .comp-periodo-badge  { font-size: 10px !important; padding: 2px 7px !important; }
+  .comp-section-label  { font-size: 9px  !important; }
+  .comp-item-label,
+  .comp-item-value     { font-size: 11px !important; }
+  .comp-total-label    { font-size: 11px !important; }
+  .comp-total-monto    { font-size: 18px !important; }
+  .comp-firma-nombre   { font-size: 10px !important; }
+  .comp-firma-cargo    { font-size: 9px  !important; }
+  .comp-mensaje        { font-size: 10px !important; padding: 8px 12px !important; }
+
+  /* Logo más chico */
+  .comp-logo { width: 44px !important; height: 44px !important; }
+
+  /* Padding reducido */
+  .comp-header { padding: 12px 16px !important; }
+  .comp-body   { padding: 12px 16px !important; }
+  .comp-footer { padding: 8px 16px  !important; }
+  .comp-firmas { padding: 10px 16px 8px !important; }
+
+  /* Colores forzados */
+  .comp-header,
+  .comp-footer,
+  .comp-firmas,
   .comp-mensaje { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
@@ -273,6 +330,20 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 }
 .btn-share:hover { background: #1ebe5d; }
 .btn-share svg { flex-shrink: 0; }
+
+.btn-png {
+  background: #1a3a5c;
+  color: #fff;
+  border: none;
+  gap: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+.btn-png:hover { background: #2a5580; }
+.btn-png svg { flex-shrink: 0; }
+
 @media (max-width: 768px) {
   /* Botones */
   .btn-share { display: flex; }
@@ -405,7 +476,7 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
     <label>Subcomisión</label>
     <select id="f-subcomision" onchange="render()">
       <option value="">— seleccionar —</option>
-      <option>Fútbol Mayor</option><option>Fútbol Infantil</option>
+      <option selected>Fútbol Mayor</option><option>Fútbol Infantil</option>
       <option>Fútbol Senior</option><option>Vóley</option>
       <option>Tenis</option><option>Patín</option>
       <option>Comisión Directiva</option>
@@ -414,25 +485,40 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
 
   <p class="section-title" id="label-conceptos">Conceptos de pago</p>
 
-  <!-- CUOTA MENSUAL -->
+  <!-- CONCEPTO PRINCIPAL (cuota / pago por partidos / parcial / etc.) -->
   <div class="concepto-block" id="bloque-cuota">
     <div class="cb-header">
-      <span class="cb-label">Cuota mensual</span>
+      <span class="cb-label">Concepto principal</span>
       <label class="toggle-cb">
         <input type="checkbox" id="toggle-cuota" onchange="toggleConcepto('cuota'); render()">
         <span class="slider"></span>
       </label>
     </div>
     <div class="concepto-fields" id="fields-cuota">
-      <label>Monto cuota ($)</label>
+      <label>Tipo de concepto</label>
+      <select id="f-cuota-tipo" onchange="toggleTipoOtro(); render()">
+        <option value="Cuota mensual">Cuota mensual</option>
+        <option value="Pago por partidos">Pago por partidos</option>
+        <option value="Pago parcial">Pago parcial</option>
+        <option value="Anticipo">Anticipo</option>
+        <option value="Liquidación">Liquidación</option>
+        <option value="Quincena">Quincena</option>
+        <option value="Otro">Otro (especificar)</option>
+      </select>
+      <!-- Campo libre si elige "Otro" -->
+      <div id="campo-tipo-otro" style="display:none">
+        <label style="margin-top:8px">Especificar concepto</label>
+        <input type="text" id="f-cuota-tipo-otro" placeholder="ej: Pago 2 partidos vs La Emilia y Susanense" oninput="render()">
+      </div>
+      <label style="margin-top:10px">Monto ($)</label>
       <input type="number" id="f-cuota-monto" placeholder="15000" oninput="render()" min="0">
-      <label style="margin-top:10px">Partidos jugados (opcional)</label>
+      <label style="margin-top:10px">Partidos / detalle (opcional)</label>
       <div style="display:grid;grid-template-columns:1fr auto 60px;gap:8px;align-items:end">
-        <input type="number" id="f-partidos-jugados" placeholder="ej: 8" oninput="render()" min="0">
+        <input type="number" id="f-partidos-jugados" placeholder="ej: 2" oninput="render()" min="0">
         <span style="font-size:13px;color:var(--muted);padding-bottom:9px">de</span>
         <input type="number" id="f-partidos-total" placeholder="10" oninput="render()" min="0">
       </div>
-      <label style="margin-top:10px">Descuento por ausencias ($, opcional)</label>
+      <label style="margin-top:10px">Descuento ($, opcional)</label>
       <input type="number" id="f-descuento" placeholder="0" oninput="render()" min="0">
     </div>
   </div>
@@ -479,11 +565,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
     <div class="row-2">
       <div>
         <label>Nombre</label>
-        <input type="text" id="f-firma1-nombre" placeholder="Juan Pérez" oninput="saveFirmas(); render()">
+        <input type="text" id="f-firma1-nombre" placeholder="Juan Pérez" value="Laureano Gagliardo" oninput="saveFirmas(); render()">
       </div>
       <div>
         <label>Cargo</label>
-        <input type="text" id="f-firma1-cargo" placeholder="Tesorero" oninput="saveFirmas(); render()">
+        <input type="text" id="f-firma1-cargo" placeholder="Tesorero" value="Presidente" oninput="saveFirmas(); render()">
       </div>
     </div>
     <div id="pad-area-1">
@@ -579,6 +665,14 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
     <button class="btn btn-primary btn-print-desktop" onclick="imprimirYavanzar()">Imprimir / Guardar PDF</button>
     <button class="btn btn-secondary" onclick="limpiar()">Limpiar</button>
   </div>
+  <!-- Botón PNG — visible en desktop y mobile -->
+  <div class="btn-group" style="margin-top:8px">
+    <button id="btn-png" class="btn btn-png" onclick="guardarPNG()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Guardar imagen PNG
+    </button>
+  </div>
+  <!-- Botón WhatsApp — solo mobile -->
   <div class="btn-group" style="margin-top:8px">
     <button id="btn-share" class="btn btn-share" onclick="compartirWhatsapp()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.522 5.851L.057 23.886a.5.5 0 0 0 .611.61l6.109-1.456A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.89 0-3.663-.518-5.188-1.42l-.372-.22-3.853.919.938-3.77-.242-.386A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
@@ -772,6 +866,12 @@ function toggleConcepto(id) {
   document.getElementById('fields-'+id).classList.toggle('active', cb.checked);
 }
 
+// ══ Mostrar campo libre si elige "Otro" en tipo de concepto ══
+function toggleTipoOtro() {
+  const tipo = document.getElementById('f-cuota-tipo').value;
+  document.getElementById('campo-tipo-otro').style.display = tipo === 'Otro' ? '' : 'none';
+}
+
 // ══ Conceptos libres ══
 function agregarLibre() {
   libreCount++;
@@ -855,17 +955,28 @@ function render() {
   let total = 0;
   let hasAny = false;
 
-  // Cuota (solo comprobante)
+  // Concepto principal (solo comprobante)
   if (!esRecibo && document.getElementById('toggle-cuota').checked) {
     hasAny = true;
-    const monto    = parseFloat(document.getElementById('f-cuota-monto').value)  || 0;
-    const jugados  = document.getElementById('f-partidos-jugados').value;
-    const totPart  = document.getElementById('f-partidos-total').value;
-    const descto   = parseFloat(document.getElementById('f-descuento').value)    || 0;
-    addItem(container, 'Cuota mensual'+(mes?' '+mes:''), fmt(monto));
-    if (jugados && totPart) addItem(container, 'Partidos jugados: '+jugados+' / '+totPart, '', 'info-val');
+    const tipoSelect = document.getElementById('f-cuota-tipo').value;
+    const tipoOtro   = document.getElementById('f-cuota-tipo-otro').value.trim();
+    // Si eligió "Otro" usa el campo libre, sino usa el select + mes si aplica
+    let labelConcepto;
+    if (tipoSelect === 'Otro') {
+      labelConcepto = tipoOtro || 'Concepto';
+    } else if (tipoSelect === 'Cuota mensual' || tipoSelect === 'Quincena') {
+      labelConcepto = tipoSelect + (mes ? ' ' + mes : '');
+    } else {
+      labelConcepto = tipoSelect;
+    }
+    const monto   = parseFloat(document.getElementById('f-cuota-monto').value) || 0;
+    const jugados = document.getElementById('f-partidos-jugados').value;
+    const totPart = document.getElementById('f-partidos-total').value;
+    const descto  = parseFloat(document.getElementById('f-descuento').value)   || 0;
+    addItem(container, labelConcepto, fmt(monto));
+    if (jugados && totPart) addItem(container, 'Partidos: '+jugados+' / '+totPart, '', 'info-val');
     if (descto > 0) {
-      addItem(container, 'Descuento por ausencias', '−'+fmt(descto), 'descuento');
+      addItem(container, 'Descuento', '−'+fmt(descto), 'descuento');
       total += monto - descto;
     } else { total += monto; }
   }
@@ -1069,6 +1180,43 @@ function importarFirma(n, input) {
   input.value = ''; // Reset para permitir reimportar el mismo archivo
 }
 
+// ══ Guardar como PNG (desktop y mobile) ══
+async function guardarPNG() {
+  const btn = document.getElementById('btn-png');
+  const statusEls = document.querySelectorAll('.share-status');
+  btn.disabled = true;
+  statusEls.forEach(el => el.textContent = 'Generando imagen...');
+
+  try {
+    const comp = document.getElementById('comprobante');
+    const canvas = await html2canvas(comp, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+
+    canvas.toBlob((blob) => {
+      const numero = document.getElementById('f-numero').value || '0000';
+      const nombre = document.getElementById('f-nombre').value || 'comprobante';
+      const fileName = 'CDM_' + String(numero).padStart(4,'0') + '_' + nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.png';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+      statusEls.forEach(el => el.textContent = 'Imagen descargada. Podés adjuntarla en WhatsApp desde tu PC.');
+      btn.disabled = false;
+    }, 'image/png');
+
+  } catch (err) {
+    statusEls.forEach(el => el.textContent = 'Error al generar la imagen.');
+    btn.disabled = false;
+    console.error(err);
+  }
+}
+
 // ══ Compartir como imagen (Web Share API — Android) ══
 async function compartirWhatsapp() {
   const btn = document.getElementById('btn-share');
@@ -1141,6 +1289,29 @@ function loadPadVisibility() {
       if (pad) pad.style.display = 'none';
     }
   });
+}
+
+
+// ══ Firma Presidente precargada ══
+function precargarFirmaPresidente() {
+  const savedImg = localStorage.getItem('cdm_firma1_img');
+  if (!savedImg) {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.getElementById('canvas-firma-1');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.85;
+      const dx = (canvas.width  - img.width  * scale) / 2;
+      const dy = (canvas.height - img.height * scale) / 2;
+      ctx.drawImage(img, dx, dy, img.width * scale, img.height * scale);
+      document.getElementById('wrap-1').classList.add('has-sig');
+      saveFirmas();
+      render();
+    };
+    img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOkAAABYCAYAAAAQodAzAAAEMUlEQVR4Ae3BCY7DyAEEwcz/P7oMY2HI3KZ4jK6mVBFSVVOTqpqaVNXUpKqmJlU1NamqqUlVTU2qampSVVOTqpqaVNXUpKqmJlU1NamqqUlVTU1qT1iSqjeS2hJGUvVGUlvCSKreSOqesE6q3khqTVgnVW8m9W/hPql6M6l/C/dJ1ZtJ/b9wn1R9gNT/hG1S9QFS/xPuk6oPkfqvsE2qPkQqbJOqD5IK26Tqg+S3hW1S9WHyu8I+qfow+V1hm1RNQH5T2CdVE5DfE/ZJ1STk94RtUjUR+S1hn1RNRH5H2CdVk5HfEfZJ1WTkN4R9UjUh+X5hn1RNSr5f2CdVk5LvFvZJ1cTke4VjpGpi8r3CPqmanHynsE+qLkC+U9gnVRcg3yfsk6qLkO8S9knVhch3Cfuk6kLke4R9UnUx8h3CPqm6IPkOYZ9UXZBcX9gnVRcl1xe2SdWFybWFfVJ1YXJtYZtUXZxcV9gmVV9Arilsk6ovIdcUtslvCfdJXZpcT9gnvyHsk7o0uZZwjLxPWCevFY6RujS5lnCcvF7YJ88XjpO6NLmO8DfyGuEYea5wnNTlyXWEv5PnCufIc4Rz5JgwkpqCXEN4jDxPWJKlMJLHhfNkX1gnNQWZX3icPEdYklEYyWPCebIv3Cc1BZlbeJw8R1iS+8KSPCacI/vCNqkpyNzC4+RxYUm2hSX5u3CO7Av7pKYg8wqPk8eEkewLN/J34RzZF46R1wsjqQWZU3gO+bswkmPCjfxNOE+2hWPktcI6qYHMKTxO/iaM5JxwI+eFkSyFJdkWjpPXCOuk7pI5hcfJeWEk54UbOS8sySgsybpwjmwL++QmbJPaJPMJj5Nzwjr5m/APOS+MZBRu5L5wnNwXnkvqEJlLeJycE0byd+FGzgnrZCksybpwjozC80kdJvMIzyHHhHXymHAjx4WRLIWRrAtLshRGshSeS+o0mUd4nBwT1sljwo0cF0YyCkuyLizJKKwTCPfJunCf1J/JHMJzyLawTp4j3MhxYSSjsCSjsCTrwnmyLdxIPYXMITyHrAvr5HnCkhwTRjIKI1kKS7IunCP1MfJ54RhZCiNZCvfJc4Ul2RdGMgr3CYSR3BeOk/oo+awwkqUAMgrrBMJ98hrhRvaFkawLN7IURrItHCP1cfJZYSTHhPPkNcKS7AsjGYUlWQpLsi/sk5qCfE4YyTHhPHmdcCP7wkhGYUlG4UaOCdukpiGfE0ZyTDhOXi/cyLYwklEYySj8Q44L90lNRT4jrJNjwj55j7Ak28JIRmEkowByThhJTUk+I6yTY8J98l7hRraFdbIU7pN/hH/IeWFJalryfmGb7Av3yfuEJbkvbBMI58l5YUlqWvJeYZ/sC/fJe4SRrAuvI8eFdVLTkvcI58i6cIy8TtgmN+E9BMJjZBSeT5bCb5Md8phQVY+QHf8BGnnfWRlmt1kAAAAASUVORK5CYII=';
+  }
 }
 
 // ══ Init ══
