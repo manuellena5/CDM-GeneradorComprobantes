@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Comprobantes · Club Deportivo Mitre</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1206,35 +1209,45 @@ async function guardarPNG() {
 
   try {
     const comp = document.getElementById('comprobante');
+
+    // Forzar fondo blanco directamente en el elemento antes de capturar
+    // — necesario en Android Chrome que ignora backgroundColor de html2canvas
+    const oldBg = comp.style.background;
+    comp.style.background = '#ffffff';
+
     const canvas = await html2canvas(comp, {
       scale: 2,
       useCORS: true,
-      backgroundColor: '#ffffff', // fondo blanco explícito — evita negro en WhatsApp
+      allowTaint: true,
+      backgroundColor: '#ffffff',
       logging: false,
     });
 
-    // Componer sobre fondo blanco para garantizar compatibilidad en todas las apps
-    const flatCanvas = document.createElement('canvas');
-    flatCanvas.width  = canvas.width;
-    flatCanvas.height = canvas.height;
-    const ctx = flatCanvas.getContext('2d');
+    // Restaurar estilo original
+    comp.style.background = oldBg;
+
+    // Canvas intermedio con fondo blanco sólido (doble garantía)
+    const flat = document.createElement('canvas');
+    flat.width  = canvas.width;
+    flat.height = canvas.height;
+    const ctx = flat.getContext('2d');
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, flatCanvas.width, flatCanvas.height);
+    ctx.fillRect(0, 0, flat.width, flat.height);
     ctx.drawImage(canvas, 0, 0);
 
-    flatCanvas.toBlob((blob) => {
-      const numero = document.getElementById('f-numero').value || '0000';
-      const nombre = document.getElementById('f-nombre').value || 'comprobante';
+    flat.toBlob((blob) => {
+      const numero   = document.getElementById('f-numero').value || '0000';
+      const nombre   = document.getElementById('f-nombre').value || 'comprobante';
       const fileName = 'CDM_' + String(numero).padStart(4,'0') + '_' + nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.jpg';
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
+      const a   = document.createElement('a');
+      a.href     = url;
       a.download = fileName;
       a.click();
       URL.revokeObjectURL(url);
-      statusEls.forEach(el => el.textContent = 'Imagen descargada. Podés adjuntarla en WhatsApp desde tu PC.');
+      statusEls.forEach(el => el.textContent = 'Imagen guardada. Podés adjuntarla en WhatsApp.');
       btn.disabled = false;
-    }, 'image/jpeg', 0.95); // JPEG en lugar de PNG — más compatible y liviano
+    }, 'image/jpeg', 0.95);
 
   } catch (err) {
     statusEls.forEach(el => el.textContent = 'Error al generar la imagen.');
@@ -1245,56 +1258,55 @@ async function guardarPNG() {
 
 // ══ Compartir como imagen (Web Share API — Android) ══
 async function compartirWhatsapp() {
-  const btn = document.getElementById('btn-share');
+  const btn    = document.getElementById('btn-share');
   const status = document.getElementById('share-status');
   btn.disabled = true;
   status.textContent = 'Generando imagen...';
 
   try {
-    const comp = document.getElementById('comprobante');
+    const comp  = document.getElementById('comprobante');
+    // Forzar fondo blanco antes de capturar — necesario en Android Chrome
+    const oldBg = comp.style.background;
+    comp.style.background = '#ffffff';
+
     const canvas = await html2canvas(comp, {
       scale: 2,
       useCORS: true,
+      allowTaint: true,
       backgroundColor: '#ffffff',
       logging: false,
     });
 
-    // Componer sobre fondo blanco — evita fondo negro en Android/WhatsApp
-    const flatCanvas = document.createElement('canvas');
-    flatCanvas.width  = canvas.width;
-    flatCanvas.height = canvas.height;
-    const ctx = flatCanvas.getContext('2d');
+    comp.style.background = oldBg;
+
+    // Canvas intermedio con fondo blanco sólido (doble garantía)
+    const flat = document.createElement('canvas');
+    flat.width  = canvas.width;
+    flat.height = canvas.height;
+    const ctx = flat.getContext('2d');
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, flatCanvas.width, flatCanvas.height);
+    ctx.fillRect(0, 0, flat.width, flat.height);
     ctx.drawImage(canvas, 0, 0);
 
-    flatCanvas.toBlob(async (blob) => {
-      const numero = document.getElementById('f-numero').value || '0000';
-      const nombre = document.getElementById('f-nombre').value || 'comprobante';
+    flat.toBlob(async (blob) => {
+      const numero   = document.getElementById('f-numero').value || '0000';
+      const nombre   = document.getElementById('f-nombre').value || 'comprobante';
       const fileName = 'CDM_' + String(numero).padStart(4,'0') + '_' + nombre.replace(/[^a-zA-Z0-9]/g,'_') + '.jpg';
       const file = new File([blob], fileName, { type: 'image/jpeg' });
 
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({
-            files: [file],
-            title: 'Comprobante Club Deportivo Mitre',
-          });
+          await navigator.share({ files: [file], title: 'Comprobante Club Deportivo Mitre' });
           status.textContent = '¡Compartido!';
         } catch (err) {
-          if (err.name !== 'AbortError') {
-            status.textContent = 'No se pudo compartir.';
-          } else {
-            status.textContent = '';
-          }
+          status.textContent = err.name !== 'AbortError' ? 'No se pudo compartir.' : '';
         }
       } else {
-        // Fallback: descargar la imagen
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a   = document.createElement('a');
         a.href = url; a.download = fileName; a.click();
         URL.revokeObjectURL(url);
-        status.textContent = 'Imagen descargada. Compartila desde tu galería.';
+        status.textContent = 'Imagen guardada. Compartila desde tu galería.';
       }
       btn.disabled = false;
     }, 'image/jpeg', 0.95);
