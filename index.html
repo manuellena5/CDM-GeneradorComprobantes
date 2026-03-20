@@ -583,8 +583,8 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
       </div>
       <div class="firma-btn-row">
         <button class="firma-btn danger"  onclick="limpiarFirma(1)">Borrar</button>
-        <button class="firma-btn"         onclick="exportarFirma(1)">Exportar PNG</button>
-        <button class="firma-btn success" onclick="document.getElementById('import-1').click()">Importar PNG</button>
+        <button class="firma-btn"         onclick="exportarFirma(1)">Exportar firma</button>
+        <button class="firma-btn success" onclick="document.getElementById('import-1').click()">Importar firma</button>
         <input type="file" id="import-1" class="firma-import-input" accept="image/*" onchange="importarFirma(1,this)">
       </div>
     </div>
@@ -619,8 +619,8 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
       </div>
       <div class="firma-btn-row">
         <button class="firma-btn danger"  onclick="limpiarFirma(2)">Borrar</button>
-        <button class="firma-btn"         onclick="exportarFirma(2)">Exportar PNG</button>
-        <button class="firma-btn success" onclick="document.getElementById('import-2').click()">Importar PNG</button>
+        <button class="firma-btn"         onclick="exportarFirma(2)">Exportar firma</button>
+        <button class="firma-btn success" onclick="document.getElementById('import-2').click()">Importar firma</button>
         <input type="file" id="import-2" class="firma-import-input" accept="image/*" onchange="importarFirma(2,this)">
       </div>
     </div>
@@ -655,8 +655,8 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
       </div>
       <div class="firma-btn-row">
         <button class="firma-btn danger"  onclick="limpiarFirma(3)">Borrar</button>
-        <button class="firma-btn"         onclick="exportarFirma(3)">Exportar PNG</button>
-        <button class="firma-btn success" onclick="document.getElementById('import-3').click()">Importar PNG</button>
+        <button class="firma-btn"         onclick="exportarFirma(3)">Exportar firma</button>
+        <button class="firma-btn success" onclick="document.getElementById('import-3').click()">Importar firma</button>
         <input type="file" id="import-3" class="firma-import-input" accept="image/*" onchange="importarFirma(3,this)">
       </div>
     </div>
@@ -1164,12 +1164,23 @@ function limpiarFirma(n) {
 }
 
 function exportarFirma(n) {
-  const canvas   = document.getElementById('canvas-firma-'+n);
-  const cargo    = document.getElementById('f-firma'+n+'-cargo').value.trim() || 'firma'+n;
-  const filename = 'CDM_firma_' + cargo.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase() + '.png';
-  const a        = document.createElement('a');
-  a.href         = canvas.toDataURL('image/png');
-  a.download     = filename;
+  const canvas  = document.getElementById('canvas-firma-'+n);
+  const cargo   = document.getElementById('f-firma'+n+'-cargo').value.trim() || 'firma'+n;
+  const filename = 'CDM_firma_' + cargo.replace(/[^a-zA-Z0-9]/g,'_').toLowerCase() + '.jpg';
+
+  // Componer sobre el color de fondo del formulario (#edeae4)
+  // para que no salga negra al pasar por WhatsApp
+  const flat = document.createElement('canvas');
+  flat.width  = canvas.width;
+  flat.height = canvas.height;
+  const ctx = flat.getContext('2d');
+  ctx.fillStyle = '#ffffff'; // fondo blanco
+  ctx.fillRect(0, 0, flat.width, flat.height);
+  ctx.drawImage(canvas, 0, 0);
+
+  const a   = document.createElement('a');
+  a.href    = flat.toDataURL('image/jpeg', 0.95);
+  a.download = filename;
   a.click();
 }
 
