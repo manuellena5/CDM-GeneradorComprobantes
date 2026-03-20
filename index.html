@@ -362,6 +362,9 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
   .comp-firma + .comp-firma { border-left: 1px solid var(--border); border-top: none; padding-top: 0; }
   /* Print tip oculto en mobile */
   .print-tip { display: none; }
+  /* Header ocupa todo el ancho y oculta elementos secundarios */
+  .app-header { padding: 10px 16px; }
+  .header-right { display: none; }
 }
 .share-status {
   font-size: 12px; color: var(--muted); text-align: center;
@@ -508,6 +511,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
         <option value="Quincena">Quincena</option>
         <option value="Otro">Otro (especificar)</option>
       </select>
+      <!-- Campo detalle de partidos — solo visible cuando elige Pago por partidos -->
+      <div id="campo-detalle-partidos" style="display:none">
+        <label style="margin-top:8px">Partidos incluidos (opcional)</label>
+        <input type="text" id="f-partidos-detalle" placeholder="ej: La Emilia, Susanense" oninput="render()">
+      </div>
       <!-- Campo libre si elige "Otro" -->
       <div id="campo-tipo-otro" style="display:none">
         <label style="margin-top:8px">Especificar concepto</label>
@@ -921,10 +929,11 @@ function toggleConcepto(id) {
   document.getElementById('fields-'+id).classList.toggle('active', cb.checked);
 }
 
-// ══ Mostrar campo libre si elige "Otro" en tipo de concepto ══
+// ══ Mostrar campo libre si elige "Otro" o detalle si elige "Pago por partidos" ══
 function toggleTipoOtro() {
   const tipo = document.getElementById('f-cuota-tipo').value;
-  document.getElementById('campo-tipo-otro').style.display = tipo === 'Otro' ? '' : 'none';
+  document.getElementById('campo-tipo-otro').style.display        = tipo === 'Otro'              ? '' : 'none';
+  document.getElementById('campo-detalle-partidos').style.display = tipo === 'Pago por partidos' ? '' : 'none';
 }
 
 // ══ Conceptos libres ══
@@ -1021,6 +1030,9 @@ function render() {
       labelConcepto = tipoOtro || 'Concepto';
     } else if (tipoSelect === 'Cuota mensual' || tipoSelect === 'Quincena') {
       labelConcepto = tipoSelect + (mes ? ' ' + mes : '');
+    } else if (tipoSelect === 'Pago por partidos') {
+      const detalle = document.getElementById('f-partidos-detalle').value.trim();
+      labelConcepto = detalle ? 'Pago por partidos (' + detalle + ')' : 'Pago por partidos';
     } else {
       labelConcepto = tipoSelect;
     }
