@@ -565,11 +565,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
     <div class="row-2">
       <div>
         <label>Nombre</label>
-        <input type="text" id="f-firma1-nombre" placeholder="Juan Pérez" value="Laureano Gagliardo" oninput="saveFirmas(); render()">
+        <input type="text" id="f-firma1-nombre" placeholder="Juan Pérez" value="Raul Tini" oninput="saveFirmas(); render()">
       </div>
       <div>
         <label>Cargo</label>
-        <input type="text" id="f-firma1-cargo" placeholder="Tesorero" value="Presidente" oninput="saveFirmas(); render()">
+        <input type="text" id="f-firma1-cargo" placeholder="Tesorero" value="Tesorero" oninput="saveFirmas(); render()">
       </div>
     </div>
     <div id="pad-area-1">
@@ -601,11 +601,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
     <div class="row-2">
       <div>
         <label>Nombre</label>
-        <input type="text" id="f-firma2-nombre" placeholder="Ana López" oninput="saveFirmas(); render()">
+        <input type="text" id="f-firma2-nombre" placeholder="Ana López" value="Laureano Gagliardo" oninput="saveFirmas(); render()">
       </div>
       <div>
         <label>Cargo</label>
-        <input type="text" id="f-firma2-cargo" placeholder="Secretaria" oninput="saveFirmas(); render()">
+        <input type="text" id="f-firma2-cargo" placeholder="Presidente" value="Presidente" oninput="saveFirmas(); render()">
       </div>
     </div>
     <div id="pad-area-2">
@@ -637,11 +637,11 @@ textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
     <div class="row-2">
       <div>
         <label>Nombre</label>
-        <input type="text" id="f-firma3-nombre" placeholder="Carlos Díaz" oninput="saveFirmas(); render()">
+        <input type="text" id="f-firma3-nombre" placeholder="Carlos Díaz" value="Manuel Ellena" oninput="saveFirmas(); render()">
       </div>
       <div>
         <label>Cargo</label>
-        <input type="text" id="f-firma3-cargo" placeholder="Presidente" oninput="saveFirmas(); render()">
+        <input type="text" id="f-firma3-cargo" placeholder="Secretario" value="Secretario" oninput="saveFirmas(); render()">
       </div>
     </div>
     <div id="pad-area-3">
@@ -1311,11 +1311,11 @@ function loadPadVisibility() {
 
 // ══ Firma Presidente precargada ══
 function precargarFirmaPresidente() {
-  const savedImg = localStorage.getItem('cdm_firma1_img');
+  const savedImg = localStorage.getItem('cdm_firma2_img');
   if (!savedImg) {
     const img = new Image();
     img.onload = () => {
-      const canvas = document.getElementById('canvas-firma-1');
+      const canvas = document.getElementById('canvas-firma-2');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1323,7 +1323,7 @@ function precargarFirmaPresidente() {
       const dx = (canvas.width  - img.width  * scale) / 2;
       const dy = (canvas.height - img.height * scale) / 2;
       ctx.drawImage(img, dx, dy, img.width * scale, img.height * scale);
-      document.getElementById('wrap-1').classList.add('has-sig');
+      document.getElementById('wrap-2').classList.add('has-sig');
       saveFirmas();
       render();
     };
