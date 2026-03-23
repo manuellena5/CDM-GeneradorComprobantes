@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Tesorería · Club Deportivo Mitre</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy:       #0f2540;
+  --navy-mid:   #1a3a5c;
+  --navy-light: #2a5580;
+  --gold:       #c8972a;
+  --gold-light: #e8b94a;
+  --bg:         #edeae4;
+  --surface:    #ffffff;
+  --border:     #d4d0c8;
+  --text:       #1a1a1a;
+  --muted:      #6b6560;
+  --success:    #2d6a4f;
+  --success-bg: #d8f3dc;
+  --danger:     #c0392b;
+  --danger-bg:  #fdecea;
+  --radius:     10px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Header ── */
+.app-header {
+  background: var(--navy);
+  padding: 13px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 3px solid var(--gold);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+}
+.logo-wrap {
+  width: 44px; height: 44px; flex-shrink: 0;
+  background: #fff; border-radius: 8px; padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
+.logo-wrap-placeholder {
+  width: 44px; height: 44px; flex-shrink: 0;
+  background: var(--gold); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--navy);
+}
+.app-header h1 { font-size: 15px; font-weight: 500; color: #fff; }
+.app-header p  { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+.header-badge {
+  margin-left: auto;
+  background: rgba(200,151,42,0.2);
+  border: 1px solid var(--gold);
+  color: var(--gold-light);
+  font-size: 11px; font-weight: 500;
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* ── Layout ── */
+.container {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Form elements ── */
+.field { margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+
+label {
+  display: block;
+  font-size: 12px; font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: #faf9f7;
+  outline: none;
+  transition: border-color .15s, background .15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--navy-light);
+  background: #fff;
+}
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── Tipo ingreso/egreso ── */
+.tipo-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 0;
+}
+.tipo-btn {
+  padding: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #faf9f7;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: center;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tipo-btn.egreso.active {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+.tipo-btn.ingreso.active {
+  border-color: var(--success);
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+/* ── Monto ── */
+.monto-wrap {
+  position: relative;
+}
+.monto-prefix {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  pointer-events: none;
+}
+.monto-wrap input {
+  padding-left: 28px;
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* ── Botón enviar ── */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-submit:hover { background: var(--navy-mid); }
+.btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ── Estado del envío ── */
+.status-msg {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  display: none;
+}
+.status-msg.ok {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid #86efac;
+  display: block;
+}
+.status-msg.error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid #fca5a5;
+  display: block;
+}
+.status-msg.loading {
+  background: #e8edf4;
+  color: var(--navy-mid);
+  border: 1px solid var(--border);
+  display: block;
+}
+
+/* ── Historial reciente ── */
+.historial-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.historial-item:last-child { border-bottom: none; }
+.historial-left { flex: 1; min-width: 0; }
+.historial-rubro { font-size: 12px; font-weight: 600; color: var(--navy-mid); }
+.historial-concepto { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.historial-fecha { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.historial-monto { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; white-space: nowrap; }
+.historial-monto.egreso  { color: var(--danger); }
+.historial-monto.ingreso { color: var(--success); }
+.historial-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 16px 0; }
+
+@media (max-width: 480px) {
+  .card { padding: 16px; }
+  .row-2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo-wrap-placeholder">CDM</div>
+  <div>
+    <h1>Club Deportivo Mitre</h1>
+    <p>Registro de Tesorería</p>
+  </div>
+  <span class="header-badge">Tesorería</span>
+</header>
+
+<div class="container">
+
+  <!-- Formulario principal -->
+  <div class="card">
+    <p class="section-title">Nuevo movimiento</p>
+
+    <!-- Tipo: Ingreso / Egreso -->
+    <div class="field">
+      <label>Tipo de movimiento</label>
+      <div class="tipo-switch">
+        <button type="button" class="tipo-btn egreso active" id="btn-egreso" onclick="setTipo('egreso')">
+          ↓ Egreso
+        </button>
+        <button type="button" class="tipo-btn ingreso" id="btn-ingreso" onclick="setTipo('ingreso')">
+          ↑ Ingreso
+        </button>
+      </div>
+      <input type="hidden" id="f-tipo" value="egreso">
+    </div>
+
+    <!-- Fecha -->
+    <div class="field">
+      <label>Fecha</label>
+      <input type="date" id="f-fecha">
+    </div>
+
+    <!-- Rubro -->
+    <div class="field">
+      <label>Rubro</label>
+      <select id="f-rubro" onchange="actualizarCodigo()">
+        <option value="">— Seleccionar rubro —</option>
+        <option value="0|SALDO TRANSPORTE 2025">0 — SALDO TRANSPORTE 2025</option>
+        <option value="1|ENTRADAS | CANCHA">1 — ENTRADAS | CANCHA</option>
+        <option value="2|UTILIDAD BAR Y PARRILLA | CANCHA">2 — UTILIDAD BAR Y PARRILLA | CANCHA</option>
+        <option value="3|VENTA NÚMERO EN CANCHA | CANCHA">3 — VENTA NÚMERO EN CANCHA | CANCHA</option>
+        <option value="4|TRIBUNA | CANCHA">4 — TRIBUNA | CANCHA</option>
+        <option value="5|REC.PUBLICIDAD ESTATICA Y GASTO">5 — REC.PUBLICIDAD ESTATICA Y GASTO</option>
+        <option value="6|ADHERENTES | COLABORADORES">6 — ADHERENTES | COLABORADORES</option>
+        <option value="7|PEÑAS - INGRESOS VARIOS">7 — PEÑAS - INGRESOS VARIOS</option>
+        <option value="8|COMISIONES VENTA RIFAS ETC.">8 — COMISIONES VENTA RIFAS ETC.</option>
+        <option value="9|INTERESES y GASTOS Cuenta">9 — INTERESES y GASTOS Cuenta</option>
+        <option value="10|LIGA - FICHAJES Y MULTAS">10 — LIGA - FICHAJES Y MULTAS</option>
+        <option value="11|COBROS Y PAGOS PASE JUGADOR">11 — COBROS Y PAGOS PASE JUGADOR</option>
+        <option value="12|SERVICIO DE ÁRBITROS | CANCHA">12 — SERVICIO DE ÁRBITROS | CANCHA</option>
+        <option value="13|SERVICIO POLICIA ADICIONAL | CANCHA">13 — SERVICIO POLICIA ADICIONAL | CANCHA</option>
+        <option value="14|FILMACION | CANCHA">14 — FILMACION | CANCHA</option>
+        <option value="15|SUELDOS REFUERZOS">15 — SUELDOS REFUERZOS</option>
+        <option value="16|MOVILIDAD-APORTES Y GASTOS">16 — MOVILIDAD-APORTES Y GASTOS</option>
+        <option value="17|SERVICIO GIMNASIO">17 — SERVICIO GIMNASIO</option>
+        <option value="18|SUELDO DT Y CT">18 — SUELDO DT Y CT</option>
+        <option value="19|SUELDO JUGADORES LOCALES">19 — SUELDO JUGADORES LOCALES</option>
+        <option value="20|GASTOS ATENCION JUGADORES">20 — GASTOS ATENCION JUGADORES</option>
+        <option value="21|GASTOS MEDICOS Y FARMACIA | REINT SEG">21 — GASTOS MEDICOS Y FARMACIA | REINT SEG</option>
+        <option value="22|LAVADO y ARREGLOS INDUMENT.">22 — LAVADO y ARREGLOS INDUMENT.</option>
+        <option value="23|SEGURO JUGADORES Y CANCHA">23 — SEGURO JUGADORES Y CANCHA</option>
+        <option value="24|PUBLICIDAD - PAGOS VARIOS">24 — PUBLICIDAD - PAGOS VARIOS</option>
+        <option value="25|GAS">25 — GAS</option>
+        <option value="26|ENERGIA ELECTRICA">26 — ENERGIA ELECTRICA</option>
+        <option value="27|PELOTAS-EQUIPO DEPOR.">27 — PELOTAS-EQUIPO DEPOR.</option>
+        <option value="28|LIBRERÍA">28 — LIBRERÍA</option>
+        <option value="29|MANT.CANCHA Y INSTALACIONES">29 — MANT.CANCHA Y INSTALACIONES</option>
+        <option value="30|SERVICIOS GENERALES /M.de Obra">30 — SERVICIOS GENERALES /M.de Obra</option>
+        <option value="31|LIMPIEZA -Servicio y elementos">31 — LIMPIEZA -Servicio y elementos</option>
+        <option value="32|OBRAS">32 — OBRAS</option>
+        <option value="33|BIENES DE USO">33 — BIENES DE USO</option>
+        <option value="34|CEREAL INGRESOS Y GASTOS">34 — CEREAL INGRESOS Y GASTOS</option>
+        <option value="35|INDUMENTARIA Y MERCH.">35 — INDUMENTARIA Y MERCH.</option>
+        <option value="36|SERVICIO MEDICO Y AMBULANCIA | CANCHA">36 — SERVICIO MEDICO Y AMBULANCIA | CANCHA</option>
+        <option value="37|GASTOS ATENCION REFUERZOS|DT">37 — GASTOS ATENCION REFUERZOS|DT</option>
+        <option value="38|INGRESOS Y GASTOS SUBCOM">38 — INGRESOS Y GASTOS SUBCOM</option>
+        <option value="39|SALDO NOCTURNO">39 — SALDO NOCTURNO</option>
+        <option value="49|TRANSFERENCIA ENTRE CUENTAS">49 — TRANSFERENCIA ENTRE CUENTAS</option>
+      </select>
+    </div>
+
+    <!-- Concepto -->
+    <div class="field">
+      <label>Concepto / Descripción</label>
+      <input type="text" id="f-concepto" placeholder="ej: Remis | Refuerzos">
+    </div>
+
+    <!-- Monto -->
+    <div class="field">
+      <label>Monto</label>
+      <div class="monto-wrap">
+        <span class="monto-prefix">$</span>
+        <input type="number" id="f-monto" placeholder="0" min="0" step="1">
+      </div>
+    </div>
+
+    <!-- Cuenta y Método -->
+    <div class="row-2">
+      <div class="field">
+        <label>Cuenta</label>
+        <select id="f-cuenta">
+          <option value="Naranja X">Naranja X</option>
+          <option value="Efectivo">Efectivo</option>
+          <option value="MACRO">MACRO</option>
+          <option value="MUTUAL">MUTUAL</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Método de pago</label>
+        <select id="f-metodo">
+          <option value="Transferencia">Transferencia</option>
+          <option value="Efectivo">Efectivo</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="field">
+      <label>Observaciones <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
+      <textarea id="f-observaciones" placeholder="Notas adicionales..."></textarea>
+    </div>
+
+    <!-- Botón enviar -->
+    <button class="btn-submit" id="btn-submit" onclick="enviar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      Registrar movimiento
+    </button>
+    <div class="status-msg" id="status-msg"></div>
+  </div>
+
+  <!-- Historial reciente -->
+  <div class="card">
+    <p class="section-title">Últimos registros (esta sesión)</p>
+    <div id="historial">
+      <p class="historial-empty">Los movimientos registrados aparecerán aquí.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══ URL del Apps Script — REEMPLAZÁ con tu URL después de publicar ══
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzoiy4i1TNqU4J7T44AQxnKN6KugjIGqJl_gCCUGjISvLJ-rb9q6rRr_tauVZxuGl1b/exec';
+
+// ══ Historial local de la sesión ══
+const historialLocal = [];
+
+// ══ Setear fecha de hoy por defecto ══
+function setFechaHoy() {
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm   = String(hoy.getMonth() + 1).padStart(2, '0');
+  const dd   = String(hoy.getDate()).padStart(2, '0');
+  document.getElementById('f-fecha').value = `${yyyy}-${mm}-${dd}`;
+}
+setFechaHoy();
+
+// ══ Toggle Ingreso / Egreso ══
+function setTipo(tipo) {
+  document.getElementById('f-tipo').value = tipo;
+  document.getElementById('btn-egreso').classList.toggle('active', tipo === 'egreso');
+  document.getElementById('btn-ingreso').classList.toggle('active', tipo === 'ingreso');
+}
+
+// ══ Obtener código y nombre del rubro ══
+function actualizarCodigo() {}
+
+function getRubro() {
+  const val = document.getElementById('f-rubro').value;
+  if (!val) return { cod: '', nombre: '' };
+  const [cod, nombre] = val.split('|');
+  return { cod, nombre };
+}
+
+// ══ Formatear monto ══
+function fmtMonto(n) {
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+
+// ══ Enviar al Sheet ══
+async function enviar() {
+  const tipo         = document.getElementById('f-tipo').value;
+  const fecha        = document.getElementById('f-fecha').value;
+  const rubro        = getRubro();
+  const concepto     = document.getElementById('f-concepto').value.trim();
+  const monto        = parseFloat(document.getElementById('f-monto').value) || 0;
+  const cuenta       = document.getElementById('f-cuenta').value;
+  const metodo       = document.getElementById('f-metodo').value;
+  const observaciones= document.getElementById('f-observaciones').value.trim();
+
+  // Validación
+  if (!fecha)         return mostrarStatus('Ingresá una fecha.', 'error');
+  if (!rubro.nombre)  return mostrarStatus('Seleccioná un rubro.', 'error');
+  if (!concepto)      return mostrarStatus('Ingresá una descripción.', 'error');
+  if (monto <= 0)     return mostrarStatus('Ingresá un monto mayor a 0.', 'error');
+
+  // Armar fecha formateada DD/MM/YYYY
+  const [y, m, d] = fecha.split('-');
+  const fechaFmt  = `${d}/${m}/${y}`;
+  const mes       = new Date(fecha).toLocaleString('es-AR', { month: 'long' }).toUpperCase();
+  const mesFmt    = `${String(m).padStart(2,'0')}-${mes}`;
+
+  const egreso  = tipo === 'egreso'  ? -monto : '';
+  const ingreso = tipo === 'ingreso' ?  monto : '';
+
+  const payload = {
+    mes:          mesFmt,
+    fecha:        fechaFmt,
+    codRubro:     rubro.cod,
+    rubro:        rubro.nombre,
+    concepto,
+    egreso,
+    ingreso,
+    cuenta,
+    metodo,
+    observaciones,
+  };
+
+  mostrarStatus('Enviando...', 'loading');
+  document.getElementById('btn-submit').disabled = true;
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    // Con no-cors no podemos leer la respuesta, asumimos éxito
+    mostrarStatus('✅ Movimiento registrado correctamente.', 'ok');
+    agregarAlHistorial(payload, tipo, monto);
+    limpiarForm();
+
+  } catch (err) {
+    mostrarStatus('❌ Error al conectar. Revisá tu conexión.', 'error');
+    console.error(err);
+  }
+
+  document.getElementById('btn-submit').disabled = false;
+}
+
+// ══ Mostrar estado ══
+function mostrarStatus(msg, tipo) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = 'status-msg ' + tipo;
+  if (tipo === 'ok') setTimeout(() => el.className = 'status-msg', 4000);
+}
+
+// ══ Agregar al historial local ══
+function agregarAlHistorial(payload, tipo, monto) {
+  historialLocal.unshift({ payload, tipo, monto });
+  renderHistorial();
+}
+
+function renderHistorial() {
+  const el = document.getElementById('historial');
+  if (historialLocal.length === 0) {
+    el.innerHTML = '<p class="historial-empty">Los movimientos registrados aparecerán aquí.</p>';
+    return;
+  }
+  el.innerHTML = historialLocal.slice(0, 8).map(({ payload, tipo, monto }) => `
+    <div class="historial-item">
+      <div class="historial-left">
+        <div class="historial-rubro">${payload.rubro}</div>
+        <div class="historial-concepto">${payload.concepto}</div>
+        <div class="historial-fecha">${payload.fecha} · ${payload.cuenta} · ${payload.metodo}</div>
+      </div>
+      <div class="historial-monto ${tipo}">
+        ${tipo === 'egreso' ? '−' : '+'}${fmtMonto(monto)}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══ Limpiar formulario ══
+function limpiarForm() {
+  document.getElementById('f-rubro').value        = '';
+  document.getElementById('f-concepto').value     = '';
+  document.getElementById('f-monto').value        = '';
+  document.getElementById('f-observaciones').value= '';
+  setFechaHoy();
+  // Mantener tipo, cuenta y método para agilizar carga en serie
+}
+</script>
+
+</body>
+</html>
