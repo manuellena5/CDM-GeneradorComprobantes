@@ -141,7 +141,7 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 /* ── Tipo ingreso/egreso ── */
 .tipo-switch {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
   margin-bottom: 0;
 }
@@ -162,16 +162,36 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
   justify-content: center;
   gap: 6px;
 }
-.tipo-btn.egreso.active {
-  border-color: var(--danger);
-  background: var(--danger-bg);
-  color: var(--danger);
+.tipo-btn.egreso.active  { border-color: var(--danger);  background: var(--danger-bg);  color: var(--danger); }
+.tipo-btn.ingreso.active { border-color: var(--success); background: var(--success-bg); color: var(--success); }
+.tipo-btn.ambos.active   { border-color: var(--gold);    background: rgba(200,151,42,.1); color: var(--gold); }
+
+/* ── Rubro con búsqueda ── */
+.rubro-wrap { position: relative; }
+.rubro-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 50;
 }
-.tipo-btn.ingreso.active {
-  border-color: var(--success);
-  background: var(--success-bg);
-  color: var(--success);
+.rubro-dropdown.visible { display: block; }
+.rubro-option {
+  padding: 10px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0ede8;
+  transition: background .1s;
 }
+.rubro-option:last-child { border-bottom: none; }
+.rubro-option:hover, .rubro-option.selected { background: #e8edf4; }
+.rubro-option strong { color: var(--navy-mid); }
 
 /* ── Monto ── */
 .monto-wrap {
@@ -289,12 +309,9 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
     <div class="field">
       <label>Tipo de movimiento</label>
       <div class="tipo-switch">
-        <button type="button" class="tipo-btn egreso active" id="btn-egreso" onclick="setTipo('egreso')">
-          ↓ Egreso
-        </button>
-        <button type="button" class="tipo-btn ingreso" id="btn-ingreso" onclick="setTipo('ingreso')">
-          ↑ Ingreso
-        </button>
+        <button type="button" class="tipo-btn egreso active" id="btn-egreso" onclick="setTipo('egreso')">↓ Egreso</button>
+        <button type="button" class="tipo-btn ingreso" id="btn-ingreso" onclick="setTipo('ingreso')">↑ Ingreso</button>
+        <button type="button" class="tipo-btn ambos" id="btn-ambos" onclick="setTipo('ambos')">⇅ Ambos</button>
       </div>
       <input type="hidden" id="f-tipo" value="egreso">
     </div>
@@ -305,53 +322,16 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
       <input type="date" id="f-fecha">
     </div>
 
-    <!-- Rubro -->
+    <!-- Rubro con búsqueda -->
     <div class="field">
       <label>Rubro</label>
-      <select id="f-rubro" onchange="actualizarCodigo()">
-        <option value="">— Seleccionar rubro —</option>
-        <option value="0|SALDO TRANSPORTE 2025">0 — SALDO TRANSPORTE 2025</option>
-        <option value="1|ENTRADAS | CANCHA">1 — ENTRADAS | CANCHA</option>
-        <option value="2|UTILIDAD BAR Y PARRILLA | CANCHA">2 — UTILIDAD BAR Y PARRILLA | CANCHA</option>
-        <option value="3|VENTA NÚMERO EN CANCHA | CANCHA">3 — VENTA NÚMERO EN CANCHA | CANCHA</option>
-        <option value="4|TRIBUNA | CANCHA">4 — TRIBUNA | CANCHA</option>
-        <option value="5|REC.PUBLICIDAD ESTATICA Y GASTO">5 — REC.PUBLICIDAD ESTATICA Y GASTO</option>
-        <option value="6|ADHERENTES | COLABORADORES">6 — ADHERENTES | COLABORADORES</option>
-        <option value="7|PEÑAS - INGRESOS VARIOS">7 — PEÑAS - INGRESOS VARIOS</option>
-        <option value="8|COMISIONES VENTA RIFAS ETC.">8 — COMISIONES VENTA RIFAS ETC.</option>
-        <option value="9|INTERESES y GASTOS Cuenta">9 — INTERESES y GASTOS Cuenta</option>
-        <option value="10|LIGA - FICHAJES Y MULTAS">10 — LIGA - FICHAJES Y MULTAS</option>
-        <option value="11|COBROS Y PAGOS PASE JUGADOR">11 — COBROS Y PAGOS PASE JUGADOR</option>
-        <option value="12|SERVICIO DE ÁRBITROS | CANCHA">12 — SERVICIO DE ÁRBITROS | CANCHA</option>
-        <option value="13|SERVICIO POLICIA ADICIONAL | CANCHA">13 — SERVICIO POLICIA ADICIONAL | CANCHA</option>
-        <option value="14|FILMACION | CANCHA">14 — FILMACION | CANCHA</option>
-        <option value="15|SUELDOS REFUERZOS">15 — SUELDOS REFUERZOS</option>
-        <option value="16|MOVILIDAD-APORTES Y GASTOS">16 — MOVILIDAD-APORTES Y GASTOS</option>
-        <option value="17|SERVICIO GIMNASIO">17 — SERVICIO GIMNASIO</option>
-        <option value="18|SUELDO DT Y CT">18 — SUELDO DT Y CT</option>
-        <option value="19|SUELDO JUGADORES LOCALES">19 — SUELDO JUGADORES LOCALES</option>
-        <option value="20|GASTOS ATENCION JUGADORES">20 — GASTOS ATENCION JUGADORES</option>
-        <option value="21|GASTOS MEDICOS Y FARMACIA | REINT SEG">21 — GASTOS MEDICOS Y FARMACIA | REINT SEG</option>
-        <option value="22|LAVADO y ARREGLOS INDUMENT.">22 — LAVADO y ARREGLOS INDUMENT.</option>
-        <option value="23|SEGURO JUGADORES Y CANCHA">23 — SEGURO JUGADORES Y CANCHA</option>
-        <option value="24|PUBLICIDAD - PAGOS VARIOS">24 — PUBLICIDAD - PAGOS VARIOS</option>
-        <option value="25|GAS">25 — GAS</option>
-        <option value="26|ENERGIA ELECTRICA">26 — ENERGIA ELECTRICA</option>
-        <option value="27|PELOTAS-EQUIPO DEPOR.">27 — PELOTAS-EQUIPO DEPOR.</option>
-        <option value="28|LIBRERÍA">28 — LIBRERÍA</option>
-        <option value="29|MANT.CANCHA Y INSTALACIONES">29 — MANT.CANCHA Y INSTALACIONES</option>
-        <option value="30|SERVICIOS GENERALES /M.de Obra">30 — SERVICIOS GENERALES /M.de Obra</option>
-        <option value="31|LIMPIEZA -Servicio y elementos">31 — LIMPIEZA -Servicio y elementos</option>
-        <option value="32|OBRAS">32 — OBRAS</option>
-        <option value="33|BIENES DE USO">33 — BIENES DE USO</option>
-        <option value="34|CEREAL INGRESOS Y GASTOS">34 — CEREAL INGRESOS Y GASTOS</option>
-        <option value="35|INDUMENTARIA Y MERCH.">35 — INDUMENTARIA Y MERCH.</option>
-        <option value="36|SERVICIO MEDICO Y AMBULANCIA | CANCHA">36 — SERVICIO MEDICO Y AMBULANCIA | CANCHA</option>
-        <option value="37|GASTOS ATENCION REFUERZOS|DT">37 — GASTOS ATENCION REFUERZOS|DT</option>
-        <option value="38|INGRESOS Y GASTOS SUBCOM">38 — INGRESOS Y GASTOS SUBCOM</option>
-        <option value="39|SALDO NOCTURNO">39 — SALDO NOCTURNO</option>
-        <option value="49|TRANSFERENCIA ENTRE CUENTAS">49 — TRANSFERENCIA ENTRE CUENTAS</option>
-      </select>
+      <div class="rubro-wrap">
+        <input type="text" id="f-rubro-search" placeholder="Escribí para buscar..." autocomplete="off"
+               oninput="filtrarRubros()" onfocus="mostrarDropdown()" onblur="ocultarDropdown()">
+        <div class="rubro-dropdown" id="rubro-dropdown"></div>
+      </div>
+      <input type="hidden" id="f-rubro-cod">
+      <input type="hidden" id="f-rubro-nombre">
     </div>
 
     <!-- Concepto -->
@@ -360,12 +340,32 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
       <input type="text" id="f-concepto" placeholder="ej: Remis | Refuerzos">
     </div>
 
-    <!-- Monto -->
-    <div class="field">
-      <label>Monto</label>
+    <!-- Monto único (egreso o ingreso) -->
+    <div class="field" id="campo-monto-unico">
+      <label id="label-monto">Monto</label>
       <div class="monto-wrap">
         <span class="monto-prefix">$</span>
         <input type="number" id="f-monto" placeholder="0" min="0" step="1">
+      </div>
+    </div>
+
+    <!-- Montos separados (modo AMBOS) -->
+    <div id="campo-monto-ambos" style="display:none">
+      <div class="row-2">
+        <div class="field">
+          <label>↑ Ingreso</label>
+          <div class="monto-wrap">
+            <span class="monto-prefix">$</span>
+            <input type="number" id="f-ingreso" placeholder="0" min="0" step="1">
+          </div>
+        </div>
+        <div class="field">
+          <label>↓ Egreso</label>
+          <div class="monto-wrap">
+            <span class="monto-prefix">$</span>
+            <input type="number" id="f-egreso" placeholder="0" min="0" step="1">
+          </div>
+        </div>
       </div>
     </div>
 
@@ -415,7 +415,261 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 
 <script>
 // ══ URL del Apps Script — REEMPLAZÁ con tu URL después de publicar ══
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0RgNj1y1ZfgyvQALQXNCsTETSTgnJwfeabi5B9WRibj1pcdxKUwGoLeXbZ1yqjgdJ/exec';
+const APPS_SCRIPT_URL = 'TU_URL_AQUI';
+
+// ══ Lista de rubros ══
+const RUBROS = [
+  { cod: '0',  nombre: 'SALDO TRANSPORTE 2025' },
+  { cod: '1',  nombre: 'ENTRADAS | CANCHA' },
+  { cod: '2',  nombre: 'UTILIDAD BAR Y PARRILLA | CANCHA' },
+  { cod: '3',  nombre: 'VENTA NÚMERO EN CANCHA | CANCHA' },
+  { cod: '4',  nombre: 'TRIBUNA | CANCHA' },
+  { cod: '5',  nombre: 'REC.PUBLICIDAD ESTATICA Y GASTO' },
+  { cod: '6',  nombre: 'ADHERENTES | COLABORADORES' },
+  { cod: '7',  nombre: 'PEÑAS - INGRESOS VARIOS' },
+  { cod: '8',  nombre: 'COMISIONES VENTA RIFAS ETC.' },
+  { cod: '9',  nombre: 'INTERESES y GASTOS Cuenta' },
+  { cod: '10', nombre: 'LIGA - FICHAJES Y MULTAS' },
+  { cod: '11', nombre: 'COBROS Y PAGOS PASE JUGADOR' },
+  { cod: '12', nombre: 'SERVICIO DE ÁRBITROS | CANCHA' },
+  { cod: '13', nombre: 'SERVICIO POLICIA ADICIONAL | CANCHA' },
+  { cod: '14', nombre: 'FILMACION | CANCHA' },
+  { cod: '15', nombre: 'SUELDOS REFUERZOS' },
+  { cod: '16', nombre: 'MOVILIDAD-APORTES Y GASTOS' },
+  { cod: '17', nombre: 'SERVICIO GIMNASIO' },
+  { cod: '18', nombre: 'SUELDO DT Y CT' },
+  { cod: '19', nombre: 'SUELDO JUGADORES LOCALES' },
+  { cod: '20', nombre: 'GASTOS ATENCION JUGADORES' },
+  { cod: '21', nombre: 'GASTOS MEDICOS Y FARMACIA | REINT SEG' },
+  { cod: '22', nombre: 'LAVADO y ARREGLOS INDUMENT.' },
+  { cod: '23', nombre: 'SEGURO JUGADORES Y CANCHA' },
+  { cod: '24', nombre: 'PUBLICIDAD - PAGOS VARIOS' },
+  { cod: '25', nombre: 'GAS' },
+  { cod: '26', nombre: 'ENERGIA ELECTRICA' },
+  { cod: '27', nombre: 'PELOTAS-EQUIPO DEPOR.' },
+  { cod: '28', nombre: 'LIBRERÍA' },
+  { cod: '29', nombre: 'MANT.CANCHA Y INSTALACIONES' },
+  { cod: '30', nombre: 'SERVICIOS GENERALES /M.de Obra' },
+  { cod: '31', nombre: 'LIMPIEZA -Servicio y elementos' },
+  { cod: '32', nombre: 'OBRAS' },
+  { cod: '33', nombre: 'BIENES DE USO' },
+  { cod: '34', nombre: 'CEREAL INGRESOS Y GASTOS' },
+  { cod: '35', nombre: 'INDUMENTARIA Y MERCH.' },
+  { cod: '36', nombre: 'SERVICIO MEDICO Y AMBULANCIA | CANCHA' },
+  { cod: '37', nombre: 'GASTOS ATENCION REFUERZOS|DT' },
+  { cod: '38', nombre: 'INGRESOS Y GASTOS SUBCOM' },
+  { cod: '39', nombre: 'SALDO NOCTURNO' },
+  { cod: '49', nombre: 'TRANSFERENCIA ENTRE CUENTAS' },
+];
+
+// ══ Historial local ══
+const historialLocal = [];
+
+// ══ Fecha de hoy ══
+function setFechaHoy() {
+  const hoy  = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm   = String(hoy.getMonth() + 1).padStart(2, '0');
+  const dd   = String(hoy.getDate()).padStart(2, '0');
+  document.getElementById('f-fecha').value = `${yyyy}-${mm}-${dd}`;
+}
+setFechaHoy();
+
+// ══ Toggle tipo ══
+function setTipo(tipo) {
+  document.getElementById('f-tipo').value = tipo;
+  ['egreso','ingreso','ambos'].forEach(t => {
+    document.getElementById('btn-'+t).classList.toggle('active', t === tipo);
+  });
+  // Mostrar campo monto correcto
+  const esAmbos = tipo === 'ambos';
+  document.getElementById('campo-monto-unico').style.display = esAmbos ? 'none' : '';
+  document.getElementById('campo-monto-ambos').style.display = esAmbos ? ''     : 'none';
+  // Actualizar label del monto único
+  if (!esAmbos) {
+    document.getElementById('label-monto').textContent = tipo === 'egreso' ? '↓ Egreso' : '↑ Ingreso';
+  }
+}
+
+// ══ Rubro — búsqueda con dropdown ══
+let dropdownTimeout = null;
+
+function filtrarRubros() {
+  const q    = document.getElementById('f-rubro-search').value.toLowerCase().trim();
+  const list = q
+    ? RUBROS.filter(r => r.nombre.toLowerCase().includes(q) || r.cod.includes(q))
+    : RUBROS;
+  renderDropdown(list);
+  document.getElementById('rubro-dropdown').classList.add('visible');
+  // Limpiar selección si el texto cambió
+  document.getElementById('f-rubro-cod').value    = '';
+  document.getElementById('f-rubro-nombre').value = '';
+}
+
+function renderDropdown(list) {
+  const dd = document.getElementById('rubro-dropdown');
+  if (list.length === 0) {
+    dd.innerHTML = '<div class="rubro-option" style="color:var(--muted)">Sin resultados</div>';
+    return;
+  }
+  dd.innerHTML = list.map(r =>
+    `<div class="rubro-option" onmousedown="seleccionarRubro('${r.cod}','${r.nombre.replace(/'/g,"\\'")}')">
+      <strong>${r.cod}</strong> — ${r.nombre}
+    </div>`
+  ).join('');
+}
+
+function seleccionarRubro(cod, nombre) {
+  document.getElementById('f-rubro-search').value  = `${cod} — ${nombre}`;
+  document.getElementById('f-rubro-cod').value     = cod;
+  document.getElementById('f-rubro-nombre').value  = nombre;
+  document.getElementById('rubro-dropdown').classList.remove('visible');
+}
+
+function mostrarDropdown() {
+  filtrarRubros();
+}
+
+function ocultarDropdown() {
+  // Pequeño delay para que el click en la opción se registre antes de ocultar
+  dropdownTimeout = setTimeout(() => {
+    document.getElementById('rubro-dropdown').classList.remove('visible');
+  }, 200);
+}
+
+function actualizarCodigo() {} // compatibilidad
+
+// ══ Enviar al Sheet ══
+async function enviar() {
+  const tipo    = document.getElementById('f-tipo').value;
+  const fecha   = document.getElementById('f-fecha').value;
+  const cod     = document.getElementById('f-rubro-cod').value;
+  const rubro   = document.getElementById('f-rubro-nombre').value;
+  const concepto     = document.getElementById('f-concepto').value.trim();
+  const cuenta       = document.getElementById('f-cuenta').value;
+  const metodo       = document.getElementById('f-metodo').value;
+  const observaciones= document.getElementById('f-observaciones').value.trim();
+
+  // Montos según tipo
+  let montoEgreso = 0, montoIngreso = 0;
+  if (tipo === 'ambos') {
+    montoIngreso = parseFloat(document.getElementById('f-ingreso').value) || 0;
+    montoEgreso  = parseFloat(document.getElementById('f-egreso').value)  || 0;
+  } else if (tipo === 'egreso') {
+    montoEgreso  = parseFloat(document.getElementById('f-monto').value) || 0;
+  } else {
+    montoIngreso = parseFloat(document.getElementById('f-monto').value) || 0;
+  }
+
+  // Validaciones
+  if (!fecha)   return mostrarStatus('Ingresá una fecha.', 'error');
+  if (!rubro)   return mostrarStatus('Seleccioná un rubro de la lista.', 'error');
+  if (!concepto)return mostrarStatus('Ingresá una descripción.', 'error');
+  if (tipo === 'ambos' && montoIngreso === 0 && montoEgreso === 0)
+    return mostrarStatus('Ingresá al menos un monto.', 'error');
+  if (tipo !== 'ambos' && montoEgreso === 0 && montoIngreso === 0)
+    return mostrarStatus('Ingresá un monto mayor a 0.', 'error');
+
+  // Formatear fecha
+  const [y, m, d] = fecha.split('-');
+  const fechaFmt  = `${d}/${m}/${y}`;
+  const mes       = new Date(fecha).toLocaleString('es-AR', { month: 'long' }).toUpperCase();
+  const mesFmt    = `${String(m).padStart(2,'0')}-${mes}`;
+
+  const payload = {
+    mes:          mesFmt,
+    fecha:        fechaFmt,
+    codRubro:     cod,
+    rubro,
+    concepto,
+    egreso:       montoEgreso  > 0 ? -montoEgreso  : '',
+    ingreso:      montoIngreso > 0 ?  montoIngreso : '',
+    cuenta,
+    metodo,
+    observaciones,
+  };
+
+  mostrarStatus('Enviando...', 'loading');
+  document.getElementById('btn-submit').disabled = true;
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    mostrarStatus('✅ Movimiento registrado correctamente.', 'ok');
+    agregarAlHistorial(payload, tipo, montoIngreso, montoEgreso);
+    limpiarForm();
+  } catch (err) {
+    mostrarStatus('❌ Error al conectar. Revisá tu conexión.', 'error');
+    console.error(err);
+  }
+  document.getElementById('btn-submit').disabled = false;
+}
+
+// ══ Status ══
+function mostrarStatus(msg, tipo) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = 'status-msg ' + tipo;
+  if (tipo === 'ok') setTimeout(() => el.className = 'status-msg', 4000);
+}
+
+// ══ Historial ══
+function agregarAlHistorial(payload, tipo, ingreso, egreso) {
+  historialLocal.unshift({ payload, tipo, ingreso, egreso });
+  renderHistorial();
+}
+
+function fmtMonto(n) {
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+
+function renderHistorial() {
+  const el = document.getElementById('historial');
+  if (historialLocal.length === 0) {
+    el.innerHTML = '<p class="historial-empty">Los movimientos registrados aparecerán aquí.</p>';
+    return;
+  }
+  el.innerHTML = historialLocal.slice(0, 8).map(({ payload, tipo, ingreso, egreso }) => {
+    let montoHtml = '';
+    if (tipo === 'ambos') {
+      montoHtml = `
+        ${ingreso > 0 ? `<div class="historial-monto ingreso">+${fmtMonto(ingreso)}</div>` : ''}
+        ${egreso  > 0 ? `<div class="historial-monto egreso">−${fmtMonto(egreso)}</div>`  : ''}
+      `;
+    } else if (tipo === 'ingreso') {
+      montoHtml = `<div class="historial-monto ingreso">+${fmtMonto(ingreso)}</div>`;
+    } else {
+      montoHtml = `<div class="historial-monto egreso">−${fmtMonto(egreso)}</div>`;
+    }
+    return `
+      <div class="historial-item">
+        <div class="historial-left">
+          <div class="historial-rubro">${payload.rubro}</div>
+          <div class="historial-concepto">${payload.concepto}</div>
+          <div class="historial-fecha">${payload.fecha} · ${payload.cuenta} · ${payload.metodo}</div>
+        </div>
+        <div style="text-align:right">${montoHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+// ══ Limpiar ══
+function limpiarForm() {
+  document.getElementById('f-rubro-search').value  = '';
+  document.getElementById('f-rubro-cod').value     = '';
+  document.getElementById('f-rubro-nombre').value  = '';
+  document.getElementById('f-concepto').value      = '';
+  document.getElementById('f-monto').value         = '';
+  document.getElementById('f-ingreso').value       = '';
+  document.getElementById('f-egreso').value        = '';
+  document.getElementById('f-observaciones').value = '';
+  setFechaHoy();
+}
+</script>
 
 // ══ Historial local de la sesión ══
 const historialLocal = [];
@@ -562,3 +816,4 @@ function limpiarForm() {
 
 </body>
 </html>
+
