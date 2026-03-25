@@ -2,674 +2,818 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0f2540">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Tesorería · Club Deportivo Mitre</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
-  --navy:       #0f2540;
-  --navy-mid:   #1a3a5c;
-  --navy-light: #2a5580;
-  --gold:       #c8972a;
-  --gold-light: #e8b94a;
-  --bg:         #edeae4;
-  --surface:    #ffffff;
-  --border:     #d4d0c8;
-  --text:       #1a1a1a;
-  --muted:      #6b6560;
-  --success:    #2d6a4f;
-  --success-bg: #d8f3dc;
-  --danger:     #c0392b;
-  --danger-bg:  #fdecea;
-  --radius:     10px;
+  --navy:    #0f2540;
+  --navy2:   #1a3a5c;
+  --navy3:   #1e3d62;
+  --navy4:   #253f6a;
+  --border:  rgba(255,255,255,0.09);
+  --border2: rgba(255,255,255,0.18);
+  --text:    #f0f4f8;
+  --text2:   #8aa0b8;
+  --text3:   #4a6080;
+  --gold:    #c8972a;
+  --gold-bg: rgba(200,151,42,0.13);
+  --green:   #4ade80;
+  --green-bg:rgba(74,222,128,0.10);
+  --red:     #f87171;
+  --red-bg:  rgba(248,113,113,0.10);
+  --blue:    #60a5fa;
+  --blue-bg: rgba(96,165,250,0.10);
+  --warn:    #fbbf24;
+  --warn-bg: rgba(251,191,36,0.10);
+  --r:  12px;
+  --rs: 8px;
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
 }
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
+html, body {
+  background: var(--navy); color: var(--text);
+  font-family: var(--font); font-size: 15px;
+  line-height: 1.5; min-height: 100vh;
+  overscroll-behavior: none;
 }
+#app { max-width: 480px; margin: 0 auto; padding-bottom: 84px; min-height: 100vh; }
 
 /* ── Header ── */
-.app-header {
-  background: var(--navy);
-  padding: 13px 24px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  border-bottom: 3px solid var(--gold);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  width: 100%;
-}
-.logo-wrap {
-  width: 44px; height: 44px; flex-shrink: 0;
-  background: #fff; border-radius: 8px; padding: 4px;
-  display: flex; align-items: center; justify-content: center;
-}
-.logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
-.logo-wrap-placeholder {
-  width: 44px; height: 44px; flex-shrink: 0;
-  background: var(--gold); border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: var(--navy);
-}
-.app-header h1 { font-size: 15px; font-weight: 500; color: #fff; }
-.app-header p  { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; }
-.header-badge {
-  margin-left: auto;
-  background: rgba(200,151,42,0.2);
-  border: 1px solid var(--gold);
-  color: var(--gold-light);
-  font-size: 11px; font-weight: 500;
-  padding: 3px 10px; border-radius: 20px;
-}
+.hdr { padding: 18px 18px 0; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.hdr-logo { display: flex; align-items: center; gap: 10px; }
+.hdr-escudo { width: 36px; height: 36px; background: var(--gold); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--navy); flex-shrink: 0; }
+.hdr-title { font-size: 18px; font-weight: 600; letter-spacing: -.4px; }
+.hdr-title span { color: var(--gold); }
+.hdr-sub { font-size: 12px; color: var(--text3); padding: 2px 18px 14px; }
+.badge { font-size: 11px; color: var(--text2); background: var(--navy3); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; }
 
-/* ── Layout ── */
-.container {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
+/* ── Bottom nav ── */
+.bnav {
+  position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto;
+  background: var(--navy); border-top: 1px solid var(--border);
+  display: flex; padding: 8px 0 max(8px, env(safe-area-inset-bottom)); z-index: 50;
 }
+.bnav-btn { flex: 1; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; color: var(--text3); transition: color .15s; font-family: var(--font); }
+.bnav-btn.active { color: var(--gold); }
+.bnav-icon { font-size: 19px; line-height: 1; }
+.bnav-lbl  { font-size: 10px; font-weight: 500; }
 
-/* ── Card ── */
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  box-shadow: 0 2px 12px rgba(0,0,0,.07);
-  padding: 24px;
-  margin-bottom: 16px;
-}
+/* ── Content ── */
+.content { padding: 16px 18px 0; }
 
-.section-title {
-  font-size: 10px; font-weight: 600;
-  letter-spacing: 1px; text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
+/* ── Fields ── */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; }
+.inp {
+  width: 100%; background: var(--navy3); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 11px 14px; color: var(--text);
+  font-family: var(--font); font-size: 15px; outline: none;
+  transition: border-color .15s; -webkit-appearance: none; appearance: none;
 }
+.inp:focus { border-color: var(--border2); }
+.inp::placeholder { color: var(--text3); }
+select.inp {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a6080' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+}
+textarea.inp { resize: none; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fgrid { display: flex; flex-direction: column; gap: 14px; }
 
-/* ── Form elements ── */
-.field { margin-bottom: 16px; }
-.field:last-child { margin-bottom: 0; }
-
-label {
-  display: block;
-  font-size: 12px; font-weight: 500;
-  color: var(--muted);
-  margin-bottom: 5px;
-}
-
-input[type="text"],
-input[type="number"],
-input[type="date"],
-select,
-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  color: var(--text);
-  background: #faf9f7;
-  outline: none;
-  transition: border-color .15s, background .15s;
-  -webkit-appearance: none;
-  appearance: none;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--navy-light);
-  background: #fff;
-}
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-}
-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
-
-.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-/* ── Tipo ingreso/egreso ── */
-.tipo-switch {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 0;
-}
+/* ── Tipo pills ── */
+.tipo-row { display: flex; gap: 6px; }
 .tipo-btn {
-  padding: 12px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  background: #faf9f7;
-  cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--muted);
-  text-align: center;
-  transition: all .15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  flex: 1; padding: 11px 8px; border: 1px solid var(--border);
+  border-radius: var(--rs); background: none; cursor: pointer;
+  font-family: var(--font); font-size: 13px; font-weight: 500;
+  color: var(--text3); text-align: center; transition: all .12s;
 }
-.tipo-btn.egreso.active  { border-color: var(--danger);  background: var(--danger-bg);  color: var(--danger); }
-.tipo-btn.ingreso.active { border-color: var(--success); background: var(--success-bg); color: var(--success); }
-.tipo-btn.ambos.active   { border-color: var(--gold);    background: rgba(200,151,42,.1); color: var(--gold); }
-
-/* ── Rubro con búsqueda ── */
-.rubro-wrap { position: relative; }
-.rubro-dropdown {
-  display: none;
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0; right: 0;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.1);
-  max-height: 220px;
-  overflow-y: auto;
-  z-index: 50;
-}
-.rubro-dropdown.visible { display: block; }
-.rubro-option {
-  padding: 10px 12px;
-  font-size: 13px;
-  cursor: pointer;
-  border-bottom: 1px solid #f0ede8;
-  transition: background .1s;
-}
-.rubro-option:last-child { border-bottom: none; }
-.rubro-option:hover, .rubro-option.selected { background: #e8edf4; }
-.rubro-option strong { color: var(--navy-mid); }
+.tipo-btn.t-egreso.active  { border-color: var(--red);   background: var(--red-bg);   color: var(--red); }
+.tipo-btn.t-ingreso.active { border-color: var(--green); background: var(--green-bg); color: var(--green); }
+.tipo-btn.t-ambos.active   { border-color: var(--gold);  background: var(--gold-bg);  color: var(--gold); }
 
 /* ── Monto ── */
-.monto-wrap {
-  position: relative;
-}
-.monto-prefix {
-  position: absolute;
-  left: 12px; top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--muted);
-  pointer-events: none;
-}
-.monto-wrap input {
-  padding-left: 28px;
-  font-family: 'DM Mono', monospace;
-  font-size: 18px;
-  font-weight: 500;
-}
+.monto-field { position: relative; }
+.monto-prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 15px; pointer-events: none; }
+.monto-field .inp { padding-left: 26px; font-family: var(--mono); font-size: 17px; font-weight: 500; }
 
-/* ── Botón enviar ── */
-.btn-submit {
-  width: 100%;
-  padding: 14px;
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background .15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+/* ── Rubro autocomplete ── */
+.rubro-wrap { position: relative; }
+.rubro-drop {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--navy2); border: 1px solid var(--border2); border-radius: var(--rs);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4); max-height: 230px; overflow-y: auto; z-index: 60;
 }
-.btn-submit:hover { background: var(--navy-mid); }
-.btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+.rubro-drop.open { display: block; }
+.rub-opt { padding: 10px 14px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .1s; }
+.rub-opt:last-child { border-bottom: none; }
+.rub-opt:hover { background: var(--navy4); }
+.rub-opt strong { color: var(--gold); }
 
-/* ── Estado del envío ── */
-.status-msg {
-  margin-top: 12px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  text-align: center;
-  display: none;
+/* ── Btn principal ── */
+.btn-main {
+  width: 100%; padding: 15px; background: linear-gradient(135deg, var(--gold), #a07020);
+  color: #fff; font-family: var(--font); font-size: 16px; font-weight: 600;
+  border: none; border-radius: var(--r); cursor: pointer; letter-spacing: -.2px; transition: opacity .15s;
 }
-.status-msg.ok {
-  background: var(--success-bg);
-  color: var(--success);
-  border: 1px solid #86efac;
-  display: block;
-}
-.status-msg.error {
-  background: var(--danger-bg);
-  color: var(--danger);
-  border: 1px solid #fca5a5;
-  display: block;
-}
-.status-msg.loading {
-  background: #e8edf4;
-  color: var(--navy-mid);
-  border: 1px solid var(--border);
-  display: block;
-}
+.btn-main:active { opacity: .85; }
+.btn-secondary { width: 100%; padding: 11px; background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(96,165,250,.3); border-radius: var(--rs); font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; }
 
-/* ── Historial reciente ── */
-.historial-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-  gap: 12px;
+/* ── Cards de movimiento ── */
+.mov-card {
+  background: var(--navy2); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 13px 14px; margin-bottom: 8px;
 }
-.historial-item:last-child { border-bottom: none; }
-.historial-left { flex: 1; min-width: 0; }
-.historial-rubro { font-size: 12px; font-weight: 600; color: var(--navy-mid); }
-.historial-concepto { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.historial-fecha { font-size: 11px; color: var(--muted); margin-top: 2px; }
-.historial-monto { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; white-space: nowrap; }
-.historial-monto.egreso  { color: var(--danger); }
-.historial-monto.ingreso { color: var(--success); }
-.historial-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 16px 0; }
+.mov-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.mov-rubro { font-size: 12px; font-weight: 600; color: var(--gold); margin-bottom: 3px; }
+.mov-concepto { font-size: 14px; font-weight: 500; color: var(--text); }
+.mov-meta { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.mov-montos { text-align: right; flex-shrink: 0; }
+.mov-ing { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--green); }
+.mov-egr { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--red); }
+.mov-saldo { font-family: var(--mono); font-size: 11px; color: var(--text3); margin-top: 2px; }
 
-@media (max-width: 480px) {
-  .card { padding: 16px; }
-  .row-2 { grid-template-columns: 1fr; }
-}
+/* ── Filtros ── */
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.fpill { background: none; border: 1px solid var(--border); color: var(--text3); font-family: var(--font); font-size: 12px; padding: 5px 10px; border-radius: 20px; cursor: pointer; transition: all .12s; }
+.fpill.active { border-color: var(--gold); background: var(--gold-bg); color: var(--gold); }
+
+/* ── Dashboard ── */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.kpi { background: var(--navy2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; }
+.kpi-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+.kpi-val { font-size: 20px; font-weight: 600; font-family: var(--mono); line-height: 1.2; }
+.kpi-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.kpi-full { grid-column: 1 / -1; }
+.sec-title { font-size: 13px; font-weight: 600; color: var(--text2); margin: 16px 0 10px; }
+.cat-item { margin-bottom: 12px; }
+.cat-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+.cat-monto { font-family: var(--mono); font-size: 12px; }
+.bar-bg { height: 7px; background: var(--navy4); border-radius: 4px; overflow: hidden; }
+.bar-fill-egr { height: 100%; background: var(--red); border-radius: 4px; transition: width .4s; }
+.bar-fill-ing { height: 100%; background: var(--green); border-radius: 4px; transition: width .4s; }
+
+/* ── Config ── */
+.cfg-card { background: var(--navy2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; margin-bottom: 12px; }
+.cfg-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.cfg-desc { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 14px; }
+.cfg-note { font-size: 12px; color: var(--text3); line-height: 1.6; }
+
+/* ── Overlay ── */
+#overlay { position: fixed; inset: 0; background: rgba(15,37,64,.92); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 200; backdrop-filter: blur(2px); }
+#overlay.hidden { display: none; }
+.spinner { width: 34px; height: 34px; border: 2px solid var(--border2); border-top-color: var(--gold); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#overlay p { font-size: 13px; color: var(--text2); }
+
+/* ── Toast ── */
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); padding: 10px 22px; border-radius: var(--rs); font-size: 14px; font-weight: 500; z-index: 999; white-space: nowrap; pointer-events: none; animation: tin .2s ease; }
+.toast.ok  { background: var(--green-bg); color: var(--green); border: 1px solid rgba(74,222,128,.3); }
+.toast.err { background: var(--red-bg);   color: var(--red);   border: 1px solid rgba(248,113,113,.3); }
+@keyframes tin { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* ── Empty ── */
+.empty { text-align: center; padding: 48px 20px; color: var(--text3); }
+.empty .ico { font-size: 36px; margin-bottom: 12px; }
+.empty p { font-size: 14px; line-height: 1.6; }
+
+/* ── Count ── */
+.count-line { font-size: 12px; color: var(--text3); margin-bottom: 10px; }
 </style>
 </head>
 <body>
 
-<header class="app-header">
-  <div class="logo-wrap-placeholder">CDM</div>
-  <div>
-    <h1>Club Deportivo Mitre</h1>
-    <p>Registro de Tesorería</p>
+<div id="overlay">
+  <div class="spinner"></div>
+  <p id="overlay-msg">Cargando movimientos…</p>
+</div>
+
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-logo">
+      <div class="hdr-escudo">CDM</div>
+      <div>
+        <div class="hdr-title">Club Deportivo Mitre</div>
+      </div>
+    </div>
+    <span class="badge" id="badge">0 mov.</span>
   </div>
-  <span class="header-badge">Tesorería</span>
-</header>
+  <div class="hdr-sub">Tesorería</div>
 
-<div class="container">
+  <div class="content" id="content"></div>
 
-  <!-- Formulario principal -->
-  <div class="card">
-    <p class="section-title">Nuevo movimiento</p>
+  <nav class="bnav">
+    <button class="bnav-btn active" id="nav-nuevo"      onclick="goTab('nuevo')">
+      <span class="bnav-icon">＋</span><span class="bnav-lbl">Nuevo</span>
+    </button>
+    <button class="bnav-btn" id="nav-movimientos" onclick="goTab('movimientos')">
+      <span class="bnav-icon">📋</span><span class="bnav-lbl">Movimientos</span>
+    </button>
+    <button class="bnav-btn" id="nav-resumen"    onclick="goTab('resumen')">
+      <span class="bnav-icon">📊</span><span class="bnav-lbl">Resumen</span>
+    </button>
+    <button class="bnav-btn" id="nav-config"     onclick="goTab('config')">
+      <span class="bnav-icon">⚙️</span><span class="bnav-lbl">Config</span>
+    </button>
+  </nav>
+</div>
 
-    <!-- Tipo: Ingreso / Egreso -->
+<div id="toasts"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   RUBROS
+═══════════════════════════════════════════ */
+const RUBROS = [
+  { cod:'0',  nom:'SALDO TRANSPORTE 2025' },
+  { cod:'1',  nom:'ENTRADAS | CANCHA' },
+  { cod:'2',  nom:'UTILIDAD BAR Y PARRILLA | CANCHA' },
+  { cod:'3',  nom:'VENTA NÚMERO EN CANCHA | CANCHA' },
+  { cod:'4',  nom:'TRIBUNA | CANCHA' },
+  { cod:'5',  nom:'REC.PUBLICIDAD ESTATICA Y GASTO' },
+  { cod:'6',  nom:'ADHERENTES | COLABORADORES' },
+  { cod:'7',  nom:'PEÑAS - INGRESOS VARIOS' },
+  { cod:'8',  nom:'COMISIONES VENTA RIFAS ETC.' },
+  { cod:'9',  nom:'INTERESES y GASTOS Cuenta' },
+  { cod:'10', nom:'LIGA - FICHAJES Y MULTAS' },
+  { cod:'11', nom:'COBROS Y PAGOS PASE JUGADOR' },
+  { cod:'12', nom:'SERVICIO DE ÁRBITROS | CANCHA' },
+  { cod:'13', nom:'SERVICIO POLICIA ADICIONAL | CANCHA' },
+  { cod:'14', nom:'FILMACION | CANCHA' },
+  { cod:'15', nom:'SUELDOS REFUERZOS' },
+  { cod:'16', nom:'MOVILIDAD-APORTES Y GASTOS' },
+  { cod:'17', nom:'SERVICIO GIMNASIO' },
+  { cod:'18', nom:'SUELDO DT Y CT' },
+  { cod:'19', nom:'SUELDO JUGADORES LOCALES' },
+  { cod:'20', nom:'GASTOS ATENCION JUGADORES' },
+  { cod:'21', nom:'GASTOS MEDICOS Y FARMACIA | REINT SEG' },
+  { cod:'22', nom:'LAVADO y ARREGLOS INDUMENT.' },
+  { cod:'23', nom:'SEGURO JUGADORES Y CANCHA' },
+  { cod:'24', nom:'PUBLICIDAD - PAGOS VARIOS' },
+  { cod:'25', nom:'GAS' },
+  { cod:'26', nom:'ENERGIA ELECTRICA' },
+  { cod:'27', nom:'PELOTAS-EQUIPO DEPOR.' },
+  { cod:'28', nom:'LIBRERÍA' },
+  { cod:'29', nom:'MANT.CANCHA Y INSTALACIONES' },
+  { cod:'30', nom:'SERVICIOS GENERALES /M.de Obra' },
+  { cod:'31', nom:'LIMPIEZA -Servicio y elementos' },
+  { cod:'32', nom:'OBRAS' },
+  { cod:'33', nom:'BIENES DE USO' },
+  { cod:'34', nom:'CEREAL INGRESOS Y GASTOS' },
+  { cod:'35', nom:'INDUMENTARIA Y MERCH.' },
+  { cod:'36', nom:'SERVICIO MEDICO Y AMBULANCIA | CANCHA' },
+  { cod:'37', nom:'GASTOS ATENCION REFUERZOS|DT' },
+  { cod:'38', nom:'INGRESOS Y GASTOS SUBCOM' },
+  { cod:'39', nom:'SALDO NOCTURNO' },
+  { cod:'49', nom:'TRANSFERENCIA ENTRE CUENTAS' },
+];
+const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+/* ═══════════════════════════════════════════
+   ESTADO GLOBAL
+═══════════════════════════════════════════ */
+let movimientos  = [];
+let currentTab   = 'nuevo';
+let listMes      = nowMes();
+let listTipo     = 'Todos';
+let listRubro    = 'Todos';
+let resMes       = nowMes();
+let resTipo      = 'Egreso';
+let dropTimeout  = null;
+
+/* Estado del formulario */
+const F = {
+  tipo: 'egreso', fecha: today(),
+  rubCod: '', rubNom: '',
+  concepto: '', ingreso: '', egreso: '', monto: '',
+  cuenta: 'Naranja X', metodo: 'Transferencia',
+  observaciones: ''
+};
+
+/* ═══════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════ */
+function today() {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+function nowMes() {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1);
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+function normFecha(f) {
+  if (!f) return today();
+  const s = String(f).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return today();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+function getMes(f) { return normFecha(f).slice(0,7); }
+function mesLabel(k) {
+  if (!k) return '';
+  const [y,m] = k.split('-');
+  return MESES[+m-1] + ' ' + y;
+}
+function fmt(n) {
+  const abs = Math.abs(Math.round(+n||0));
+  return '$' + abs.toLocaleString('es-AR');
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════
+   NAVEGACIÓN
+═══════════════════════════════════════════ */
+function goTab(t) {
+  currentTab = t;
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-'+t)?.classList.add('active');
+  renderTab();
+}
+
+function renderTab() {
+  document.getElementById('badge').textContent = movimientos.length + ' mov.';
+  const c = document.getElementById('content');
+  if      (currentTab === 'nuevo')       c.innerHTML = buildNuevo();
+  else if (currentTab === 'movimientos') c.innerHTML = buildMovimientos();
+  else if (currentTab === 'resumen')     c.innerHTML = buildResumen();
+  else if (currentTab === 'config')      c.innerHTML = buildConfig();
+  if (currentTab === 'nuevo') attachNuevoListeners();
+}
+
+/* ═══════════════════════════════════════════
+   TAB NUEVO
+═══════════════════════════════════════════ */
+function buildNuevo() {
+  const cuentas  = ['Naranja X','Efectivo','MACRO','MUTUAL'];
+  const metodos  = ['Transferencia','Efectivo'];
+  const esAmbos  = F.tipo === 'ambos';
+  const cuentaOpts = cuentas.map(c => `<option${c===F.cuenta?' selected':''}>${esc(c)}</option>`).join('');
+  const metOpts    = metodos.map(m => `<option${m===F.metodo?' selected':''}>${esc(m)}</option>`).join('');
+
+  return `
+  <div class="fgrid" id="form-wrap">
+
     <div class="field">
       <label>Tipo de movimiento</label>
-      <div class="tipo-switch">
-        <button type="button" class="tipo-btn egreso active" id="btn-egreso" onclick="setTipo('egreso')">↓ Egreso</button>
-        <button type="button" class="tipo-btn ingreso" id="btn-ingreso" onclick="setTipo('ingreso')">↑ Ingreso</button>
-        <button type="button" class="tipo-btn ambos" id="btn-ambos" onclick="setTipo('ambos')">⇅ Ambos</button>
+      <div class="tipo-row">
+        <button class="tipo-btn t-egreso${F.tipo==='egreso'?' active':''}"  onclick="setTipo('egreso')">↓ Egreso</button>
+        <button class="tipo-btn t-ingreso${F.tipo==='ingreso'?' active':''}" onclick="setTipo('ingreso')">↑ Ingreso</button>
+        <button class="tipo-btn t-ambos${F.tipo==='ambos'?' active':''}"   onclick="setTipo('ambos')">⇅ Ambos</button>
       </div>
-      <input type="hidden" id="f-tipo" value="egreso">
     </div>
 
-    <!-- Fecha -->
     <div class="field">
       <label>Fecha</label>
-      <input type="date" id="f-fecha">
+      <input id="f-fecha" type="date" class="inp" value="${F.fecha}">
     </div>
 
-    <!-- Rubro con búsqueda -->
     <div class="field">
       <label>Rubro</label>
       <div class="rubro-wrap">
-        <input type="text" id="f-rubro-search" placeholder="Escribí para buscar..." autocomplete="off"
-               oninput="filtrarRubros()" onfocus="mostrarDropdown()" onblur="ocultarDropdown()">
-        <div class="rubro-dropdown" id="rubro-dropdown"></div>
+        <input id="f-rubro-txt" type="text" class="inp" placeholder="Escribí para buscar rubro…"
+          value="${esc(F.rubNom ? F.rubCod+' — '+F.rubNom : '')}"
+          oninput="filtrarRubros()" onfocus="abrirDrop()" onblur="cerrarDrop()" autocomplete="off">
+        <div class="rubro-drop" id="rubro-drop"></div>
       </div>
-      <input type="hidden" id="f-rubro-cod">
-      <input type="hidden" id="f-rubro-nombre">
     </div>
 
-    <!-- Concepto -->
     <div class="field">
       <label>Concepto / Descripción</label>
-      <input type="text" id="f-concepto" placeholder="ej: Remis | Refuerzos">
+      <input id="f-concepto" type="text" class="inp" placeholder="ej: Remis | Refuerzos" value="${esc(F.concepto)}">
     </div>
 
-    <!-- Monto único (egreso o ingreso) -->
-    <div class="field" id="campo-monto-unico">
-      <label id="label-monto">Monto</label>
-      <div class="monto-wrap">
+    ${esAmbos ? `
+    <div class="row2">
+      <div class="field">
+        <label>↑ Ingreso</label>
+        <div class="monto-field">
+          <span class="monto-prefix">$</span>
+          <input id="f-ingreso" type="number" class="inp" placeholder="0" min="0" value="${F.ingreso}" inputmode="decimal">
+        </div>
+      </div>
+      <div class="field">
+        <label>↓ Egreso</label>
+        <div class="monto-field">
+          <span class="monto-prefix">$</span>
+          <input id="f-egreso" type="number" class="inp" placeholder="0" min="0" value="${F.egreso}" inputmode="decimal">
+        </div>
+      </div>
+    </div>
+    ` : `
+    <div class="field">
+      <label>${F.tipo === 'egreso' ? '↓ Monto egreso' : '↑ Monto ingreso'}</label>
+      <div class="monto-field">
         <span class="monto-prefix">$</span>
-        <input type="number" id="f-monto" placeholder="0" min="0" step="1">
+        <input id="f-monto" type="number" class="inp" placeholder="0" min="0" value="${F.monto}" inputmode="decimal">
       </div>
     </div>
+    `}
 
-    <!-- Montos separados (modo AMBOS) -->
-    <div id="campo-monto-ambos" style="display:none">
-      <div class="row-2">
-        <div class="field">
-          <label>↑ Ingreso</label>
-          <div class="monto-wrap">
-            <span class="monto-prefix">$</span>
-            <input type="number" id="f-ingreso" placeholder="0" min="0" step="1">
-          </div>
-        </div>
-        <div class="field">
-          <label>↓ Egreso</label>
-          <div class="monto-wrap">
-            <span class="monto-prefix">$</span>
-            <input type="number" id="f-egreso" placeholder="0" min="0" step="1">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Cuenta y Método -->
-    <div class="row-2">
+    <div class="row2">
       <div class="field">
         <label>Cuenta</label>
-        <select id="f-cuenta">
-          <option value="Naranja X">Naranja X</option>
-          <option value="Efectivo">Efectivo</option>
-          <option value="MACRO">MACRO</option>
-          <option value="MUTUAL">MUTUAL</option>
-        </select>
+        <select id="f-cuenta" class="inp">${cuentaOpts}</select>
       </div>
       <div class="field">
-        <label>Método de pago</label>
-        <select id="f-metodo">
-          <option value="Transferencia">Transferencia</option>
-          <option value="Efectivo">Efectivo</option>
-        </select>
+        <label>Método</label>
+        <select id="f-metodo" class="inp">${metOpts}</select>
       </div>
     </div>
 
-    <!-- Observaciones -->
     <div class="field">
-      <label>Observaciones <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
-      <textarea id="f-observaciones" placeholder="Notas adicionales..."></textarea>
+      <label>Observaciones <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+      <textarea id="f-obs" class="inp" rows="2" placeholder="Notas adicionales…">${esc(F.observaciones)}</textarea>
     </div>
 
-    <!-- Botón enviar -->
-    <button class="btn-submit" id="btn-submit" onclick="enviar()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-      Registrar movimiento
-    </button>
-    <div class="status-msg" id="status-msg"></div>
-  </div>
-
-  <!-- Historial reciente -->
-  <div class="card">
-    <p class="section-title">Últimos registros (esta sesión)</p>
-    <div id="historial">
-      <p class="historial-empty">Los movimientos registrados aparecerán aquí.</p>
-    </div>
-  </div>
-
-</div>
-
-<script>
-// ══ URL del Apps Script — REEMPLAZÁ con tu URL después de publicar ══
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybIE8TOeIt8bRSvnmYJNOoLJLQLkBg6wcWFlOE48mmvt4ujGP2wjGhwB3GDPlCCRo/exec';
-
-// ══ Lista de rubros ══
-const RUBROS = [
-  { cod: '0',  nombre: 'SALDO TRANSPORTE 2025' },
-  { cod: '1',  nombre: 'ENTRADAS | CANCHA' },
-  { cod: '2',  nombre: 'UTILIDAD BAR Y PARRILLA | CANCHA' },
-  { cod: '3',  nombre: 'VENTA NÚMERO EN CANCHA | CANCHA' },
-  { cod: '4',  nombre: 'TRIBUNA | CANCHA' },
-  { cod: '5',  nombre: 'REC.PUBLICIDAD ESTATICA Y GASTO' },
-  { cod: '6',  nombre: 'ADHERENTES | COLABORADORES' },
-  { cod: '7',  nombre: 'PEÑAS - INGRESOS VARIOS' },
-  { cod: '8',  nombre: 'COMISIONES VENTA RIFAS ETC.' },
-  { cod: '9',  nombre: 'INTERESES y GASTOS Cuenta' },
-  { cod: '10', nombre: 'LIGA - FICHAJES Y MULTAS' },
-  { cod: '11', nombre: 'COBROS Y PAGOS PASE JUGADOR' },
-  { cod: '12', nombre: 'SERVICIO DE ÁRBITROS | CANCHA' },
-  { cod: '13', nombre: 'SERVICIO POLICIA ADICIONAL | CANCHA' },
-  { cod: '14', nombre: 'FILMACION | CANCHA' },
-  { cod: '15', nombre: 'SUELDOS REFUERZOS' },
-  { cod: '16', nombre: 'MOVILIDAD-APORTES Y GASTOS' },
-  { cod: '17', nombre: 'SERVICIO GIMNASIO' },
-  { cod: '18', nombre: 'SUELDO DT Y CT' },
-  { cod: '19', nombre: 'SUELDO JUGADORES LOCALES' },
-  { cod: '20', nombre: 'GASTOS ATENCION JUGADORES' },
-  { cod: '21', nombre: 'GASTOS MEDICOS Y FARMACIA | REINT SEG' },
-  { cod: '22', nombre: 'LAVADO y ARREGLOS INDUMENT.' },
-  { cod: '23', nombre: 'SEGURO JUGADORES Y CANCHA' },
-  { cod: '24', nombre: 'PUBLICIDAD - PAGOS VARIOS' },
-  { cod: '25', nombre: 'GAS' },
-  { cod: '26', nombre: 'ENERGIA ELECTRICA' },
-  { cod: '27', nombre: 'PELOTAS-EQUIPO DEPOR.' },
-  { cod: '28', nombre: 'LIBRERÍA' },
-  { cod: '29', nombre: 'MANT.CANCHA Y INSTALACIONES' },
-  { cod: '30', nombre: 'SERVICIOS GENERALES /M.de Obra' },
-  { cod: '31', nombre: 'LIMPIEZA -Servicio y elementos' },
-  { cod: '32', nombre: 'OBRAS' },
-  { cod: '33', nombre: 'BIENES DE USO' },
-  { cod: '34', nombre: 'CEREAL INGRESOS Y GASTOS' },
-  { cod: '35', nombre: 'INDUMENTARIA Y MERCH.' },
-  { cod: '36', nombre: 'SERVICIO MEDICO Y AMBULANCIA | CANCHA' },
-  { cod: '37', nombre: 'GASTOS ATENCION REFUERZOS|DT' },
-  { cod: '38', nombre: 'INGRESOS Y GASTOS SUBCOM' },
-  { cod: '39', nombre: 'SALDO NOCTURNO' },
-  { cod: '49', nombre: 'TRANSFERENCIA ENTRE CUENTAS' },
-];
-
-// ══ Historial local ══
-const historialLocal = [];
-
-// ══ Fecha de hoy ══
-function setFechaHoy() {
-  const hoy  = new Date();
-  const yyyy = hoy.getFullYear();
-  const mm   = String(hoy.getMonth() + 1).padStart(2, '0');
-  const dd   = String(hoy.getDate()).padStart(2, '0');
-  document.getElementById('f-fecha').value = `${yyyy}-${mm}-${dd}`;
+    <button type="button" class="btn-main" onclick="submitForm()">＋ Registrar movimiento</button>
+  </div>`;
 }
-setFechaHoy();
 
-// ══ Toggle tipo ══
-function setTipo(tipo) {
-  document.getElementById('f-tipo').value = tipo;
-  ['egreso','ingreso','ambos'].forEach(t => {
-    document.getElementById('btn-'+t).classList.toggle('active', t === tipo);
+function attachNuevoListeners() {
+  const map = {
+    'f-fecha':    v => F.fecha = v,
+    'f-concepto': v => F.concepto = v,
+    'f-obs':      v => F.observaciones = v,
+    'f-cuenta':   v => F.cuenta = v,
+    'f-metodo':   v => F.metodo = v,
+    'f-monto':    v => F.monto = v,
+    'f-ingreso':  v => F.ingreso = v,
+    'f-egreso':   v => F.egreso = v,
+  };
+  Object.entries(map).forEach(([id, fn]) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => fn(el.value));
   });
-  // Mostrar campo monto correcto
-  const esAmbos = tipo === 'ambos';
-  document.getElementById('campo-monto-unico').style.display = esAmbos ? 'none' : '';
-  document.getElementById('campo-monto-ambos').style.display = esAmbos ? ''     : 'none';
-  // Actualizar label del monto único
-  if (!esAmbos) {
-    document.getElementById('label-monto').textContent = tipo === 'egreso' ? '↓ Egreso' : '↑ Ingreso';
-  }
 }
 
-// ══ Rubro — búsqueda con dropdown ══
-let dropdownTimeout = null;
+function setTipo(t) {
+  F.tipo = t;
+  F.monto = ''; F.ingreso = ''; F.egreso = '';
+  renderTab();
+}
 
+/* ── Rubro dropdown ── */
 function filtrarRubros() {
-  const q    = document.getElementById('f-rubro-search').value.toLowerCase().trim();
-  const list = q
-    ? RUBROS.filter(r => r.nombre.toLowerCase().includes(q) || r.cod.includes(q))
-    : RUBROS;
-  renderDropdown(list);
-  document.getElementById('rubro-dropdown').classList.add('visible');
-  // Limpiar selección si el texto cambió
-  document.getElementById('f-rubro-cod').value    = '';
-  document.getElementById('f-rubro-nombre').value = '';
+  const q   = document.getElementById('f-rubro-txt')?.value.toLowerCase().trim() || '';
+  const arr = q ? RUBROS.filter(r => r.nom.toLowerCase().includes(q) || r.cod.includes(q)) : RUBROS;
+  renderDrop(arr);
+  document.getElementById('rubro-drop')?.classList.add('open');
+  F.rubCod = ''; F.rubNom = '';
 }
 
-function renderDropdown(list) {
-  const dd = document.getElementById('rubro-dropdown');
-  if (list.length === 0) {
-    dd.innerHTML = '<div class="rubro-option" style="color:var(--muted)">Sin resultados</div>';
-    return;
-  }
-  dd.innerHTML = list.map(r =>
-    `<div class="rubro-option" onmousedown="seleccionarRubro('${r.cod}','${r.nombre.replace(/'/g,"\\'")}')">
-      <strong>${r.cod}</strong> — ${r.nombre}
-    </div>`
-  ).join('');
+function renderDrop(arr) {
+  const dd = document.getElementById('rubro-drop');
+  if (!dd) return;
+  dd.innerHTML = arr.length === 0
+    ? '<div class="rub-opt" style="color:var(--text3)">Sin resultados</div>'
+    : arr.map(r => `<div class="rub-opt" onmousedown="elegirRubro('${r.cod}','${r.nom.replace(/'/g,"\\'")}')">\
+<strong>${r.cod}</strong> — ${esc(r.nom)}</div>`).join('');
 }
 
-function seleccionarRubro(cod, nombre) {
-  document.getElementById('f-rubro-search').value  = `${cod} — ${nombre}`;
-  document.getElementById('f-rubro-cod').value     = cod;
-  document.getElementById('f-rubro-nombre').value  = nombre;
-  document.getElementById('rubro-dropdown').classList.remove('visible');
+function elegirRubro(cod, nom) {
+  F.rubCod = cod; F.rubNom = nom;
+  const txt = document.getElementById('f-rubro-txt');
+  if (txt) txt.value = cod + ' — ' + nom;
+  document.getElementById('rubro-drop')?.classList.remove('open');
 }
 
-function mostrarDropdown() {
-  filtrarRubros();
-}
-
-function ocultarDropdown() {
-  // Pequeño delay para que el click en la opción se registre antes de ocultar
-  dropdownTimeout = setTimeout(() => {
-    document.getElementById('rubro-dropdown').classList.remove('visible');
+function abrirDrop() { filtrarRubros(); }
+function cerrarDrop() {
+  dropTimeout = setTimeout(() => {
+    document.getElementById('rubro-drop')?.classList.remove('open');
   }, 200);
 }
 
-function actualizarCodigo() {} // compatibilidad
+/* ── Submit ── */
+async function submitForm() {
+  const url = getScriptUrl();
+  if (!url) { showToast('Configurá la URL del script primero', false); goTab('config'); return; }
 
-// ══ Enviar al Sheet ══
-async function enviar() {
-  const tipo    = document.getElementById('f-tipo').value;
-  const fecha   = document.getElementById('f-fecha').value;
-  const cod     = document.getElementById('f-rubro-cod').value;
-  const rubro   = document.getElementById('f-rubro-nombre').value;
-  const concepto     = document.getElementById('f-concepto').value.trim();
-  const cuenta       = document.getElementById('f-cuenta').value;
-  const metodo       = document.getElementById('f-metodo').value;
-  const observaciones= document.getElementById('f-observaciones').value.trim();
+  if (!F.fecha)   return showToast('Ingresá una fecha', false);
+  if (!F.rubNom)  return showToast('Seleccioná un rubro de la lista', false);
+  if (!F.concepto.trim()) return showToast('Ingresá una descripción', false);
 
-  // Montos según tipo
-  let montoEgreso = 0, montoIngreso = 0;
-  if (tipo === 'ambos') {
-    montoIngreso = parseFloat(document.getElementById('f-ingreso').value) || 0;
-    montoEgreso  = parseFloat(document.getElementById('f-egreso').value)  || 0;
-  } else if (tipo === 'egreso') {
-    montoEgreso  = parseFloat(document.getElementById('f-monto').value) || 0;
+  let egreso = 0, ingreso = 0;
+  if (F.tipo === 'ambos') {
+    ingreso = parseFloat(F.ingreso) || 0;
+    egreso  = parseFloat(F.egreso)  || 0;
+    if (ingreso === 0 && egreso === 0) return showToast('Ingresá al menos un monto', false);
+  } else if (F.tipo === 'egreso') {
+    egreso = parseFloat(F.monto) || 0;
+    if (egreso === 0) return showToast('Ingresá un monto', false);
   } else {
-    montoIngreso = parseFloat(document.getElementById('f-monto').value) || 0;
+    ingreso = parseFloat(F.monto) || 0;
+    if (ingreso === 0) return showToast('Ingresá un monto', false);
   }
 
-  // Validaciones
-  if (!fecha)   return mostrarStatus('Ingresá una fecha.', 'error');
-  if (!rubro)   return mostrarStatus('Seleccioná un rubro de la lista.', 'error');
-  if (!concepto)return mostrarStatus('Ingresá una descripción.', 'error');
-  if (tipo === 'ambos' && montoIngreso === 0 && montoEgreso === 0)
-    return mostrarStatus('Ingresá al menos un monto.', 'error');
-  if (tipo !== 'ambos' && montoEgreso === 0 && montoIngreso === 0)
-    return mostrarStatus('Ingresá un monto mayor a 0.', 'error');
-
-  // Formatear fecha
-  const [y, m, d] = fecha.split('-');
-  const fechaFmt  = `${d}/${m}/${y}`;
-  const mes       = new Date(fecha).toLocaleString('es-AR', { month: 'long' }).toUpperCase();
-  const mesFmt    = `${String(m).padStart(2,'0')}-${mes}`;
+  const [y,m,d] = F.fecha.split('-');
+  const fechaFmt = `${d}/${m}/${y}`;
+  const mesNom   = new Date(F.fecha).toLocaleString('es-AR', { month:'long' }).toUpperCase();
+  const mesFmt   = `${m}-${mesNom}`;
 
   const payload = {
-    mes:          mesFmt,
-    fecha:        fechaFmt,
-    codRubro:     cod,
-    rubro,
-    concepto,
-    egreso:       montoEgreso  > 0 ? -montoEgreso  : '',
-    ingreso:      montoIngreso > 0 ?  montoIngreso : '',
-    cuenta,
-    metodo,
-    observaciones,
+    action: 'save',
+    mov: {
+      mes:      mesFmt,
+      fecha:    fechaFmt,
+      codRubro: F.rubCod,
+      rubro:    F.rubNom,
+      concepto: F.concepto.trim(),
+      egreso:   egreso  > 0 ? -egreso  : '',
+      ingreso:  ingreso > 0 ?  ingreso : '',
+      cuenta:   F.cuenta,
+      metodo:   F.metodo,
+      observaciones: F.observaciones.trim(),
+    }
   };
 
-  mostrarStatus('Enviando...', 'loading');
-  document.getElementById('btn-submit').disabled = true;
-
+  showOverlay('Guardando…');
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+    const r = await post(url, payload);
+    if (!r.ok) throw new Error(r.error || 'Error');
+    showToast('Movimiento registrado ✓');
+    // Agregar a lista local sin recargar
+    movimientos.unshift({
+      ...payload.mov,
+      fecha: F.fecha,
+      _local: true
     });
-    mostrarStatus('✅ Movimiento registrado correctamente.', 'ok');
-    agregarAlHistorial(payload, tipo, montoIngreso, montoEgreso);
-    limpiarForm();
-  } catch (err) {
-    mostrarStatus('❌ Error al conectar. Revisá tu conexión.', 'error');
-    console.error(err);
+    resetForm();
+    renderTab();
+  } catch(e) {
+    showToast('Error al guardar: ' + e.message, false);
   }
-  document.getElementById('btn-submit').disabled = false;
+  hideOverlay();
 }
 
-// ══ Status ══
-function mostrarStatus(msg, tipo) {
-  const el = document.getElementById('status-msg');
-  el.textContent = msg;
-  el.className = 'status-msg ' + tipo;
-  if (tipo === 'ok') setTimeout(() => el.className = 'status-msg', 4000);
+function resetForm() {
+  F.tipo = 'egreso'; F.fecha = today();
+  F.rubCod = ''; F.rubNom = '';
+  F.concepto = ''; F.ingreso = ''; F.egreso = ''; F.monto = '';
+  F.observaciones = '';
 }
 
-// ══ Historial ══
-function agregarAlHistorial(payload, tipo, ingreso, egreso) {
-  historialLocal.unshift({ payload, tipo, ingreso, egreso });
-  renderHistorial();
+/* ═══════════════════════════════════════════
+   TAB MOVIMIENTOS
+═══════════════════════════════════════════ */
+function buildMovimientos() {
+  const meses  = [...new Set(movimientos.map(m => getMes(m.fecha)))].sort().reverse();
+  const rubros = [...new Set(movimientos.map(m => m.rubro).filter(Boolean))].sort();
+
+  const mesOpts   = meses.map(k => `<option value="${k}"${k===listMes?' selected':''}>${mesLabel(k)}</option>`).join('');
+  const rubroOpts = ['Todos',...rubros].map(r => `<option value="${esc(r)}"${r===listRubro?' selected':''}>${esc(r)}</option>`).join('');
+
+  let lista = movimientos.filter(m => {
+    const okMes   = !listMes   || getMes(m.fecha) === listMes;
+    const okRubro = listRubro === 'Todos' || m.rubro === listRubro;
+    const okTipo  = listTipo  === 'Todos'
+      || (listTipo === 'Egreso'  && m.egreso  !== '' && m.egreso  !== 0)
+      || (listTipo === 'Ingreso' && m.ingreso !== '' && m.ingreso !== 0);
+    return okMes && okRubro && okTipo;
+  });
+
+  const cards = lista.length === 0
+    ? '<div class="empty"><div class="ico">📋</div><p>Sin movimientos para los filtros seleccionados.</p></div>'
+    : lista.map(m => {
+        const ing = +m.ingreso || 0;
+        const egr = Math.abs(+m.egreso || 0);
+        return `<div class="mov-card">
+          <div class="mov-top">
+            <div>
+              <div class="mov-rubro">${esc(m.rubro)}</div>
+              <div class="mov-concepto">${esc(m.concepto)}</div>
+              <div class="mov-meta">${esc(m.fecha)} · ${esc(m.cuenta||'')} · ${esc(m.metodo||'')}${m.observaciones?` · ${esc(m.observaciones)}`:''}</div>
+            </div>
+            <div class="mov-montos">
+              ${ing > 0 ? `<div class="mov-ing">+${fmt(ing)}</div>` : ''}
+              ${egr > 0 ? `<div class="mov-egr">−${fmt(egr)}</div>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  return `
+  <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <select class="inp" style="flex:1;min-width:120px" onchange="listMes=this.value;renderTab()">
+      <option value="">Todos los meses</option>${mesOpts}
+    </select>
+    <select class="inp" style="flex:1;min-width:120px" onchange="listRubro=this.value;renderTab()">
+      ${rubroOpts}
+    </select>
+  </div>
+  <div class="filters">
+    ${['Todos','Egreso','Ingreso'].map(t =>
+      `<button class="fpill${listTipo===t?' active':''}" onclick="listTipo='${t}';renderTab()">${t}</button>`
+    ).join('')}
+  </div>
+  <p class="count-line">${lista.length} movimiento${lista.length!==1?'s':''}</p>
+  ${cards}`;
 }
 
-function fmtMonto(n) {
-  return '$' + Math.round(n).toLocaleString('es-AR');
+/* ═══════════════════════════════════════════
+   TAB RESUMEN
+═══════════════════════════════════════════ */
+function buildResumen() {
+  const meses = [...new Set(movimientos.map(m => getMes(m.fecha)))].sort().reverse();
+  const mesOpts = meses.map(k => `<option value="${k}"${k===resMes?' selected':''}>${mesLabel(k)}</option>`).join('');
+
+  const filtrados = movimientos.filter(m => !resMes || getMes(m.fecha) === resMes);
+
+  let totalIng = 0, totalEgr = 0;
+  filtrados.forEach(m => {
+    totalIng += +m.ingreso || 0;
+    totalEgr += Math.abs(+m.egreso  || 0);
+  });
+  const saldo = totalIng - totalEgr;
+
+  // Agrupar por rubro
+  const porRubro = {};
+  filtrados.forEach(m => {
+    const k = m.rubro || 'Sin rubro';
+    if (!porRubro[k]) porRubro[k] = { ing: 0, egr: 0 };
+    porRubro[k].ing += +m.ingreso || 0;
+    porRubro[k].egr += Math.abs(+m.egreso || 0);
+  });
+
+  const listaEgr = Object.entries(porRubro)
+    .filter(([,v]) => v.egr > 0)
+    .map(([k,v]) => ({ k, val: v.egr }))
+    .sort((a,b) => b.val - a.val);
+  const listaIng = Object.entries(porRubro)
+    .filter(([,v]) => v.ing > 0)
+    .map(([k,v]) => ({ k, val: v.ing }))
+    .sort((a,b) => b.val - a.val);
+
+  const maxEgr = listaEgr.length ? listaEgr[0].val : 1;
+  const maxIng = listaIng.length ? listaIng[0].val  : 1;
+
+  const buildCats = (lista, max, tipo) => lista.map(({ k, val }) => `
+    <div class="cat-item">
+      <div class="cat-header">
+        <span>${esc(k)}</span>
+        <span class="cat-monto" style="color:${tipo==='egr'?'var(--red)':'var(--green)'}">${tipo==='egr'?'−':'+'}${fmt(val)}</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill-${tipo}" style="width:${(val/max*100).toFixed(1)}%"></div></div>
+    </div>`).join('');
+
+  return `
+  <div style="margin-bottom:12px">
+    <select class="inp" onchange="resMes=this.value;renderTab()">
+      <option value="">Todos los meses</option>${mesOpts}
+    </select>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-label">Total ingresos</div>
+      <div class="kpi-val" style="color:var(--green)">+${fmt(totalIng)}</div>
+      <div class="kpi-sub">${filtrados.filter(m=>+m.ingreso>0).length} mov.</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Total egresos</div>
+      <div class="kpi-val" style="color:var(--red)">−${fmt(totalEgr)}</div>
+      <div class="kpi-sub">${filtrados.filter(m=>+m.egreso<0||+m.egreso>0).length} mov.</div>
+    </div>
+    <div class="kpi kpi-full">
+      <div class="kpi-label">Saldo del período</div>
+      <div class="kpi-val" style="color:${saldo>=0?'var(--green)':'var(--red)'}">${saldo>=0?'+':''}${fmt(saldo)}</div>
+    </div>
+  </div>
+
+  ${listaEgr.length > 0 ? `
+  <div class="sec-title">Egresos por rubro</div>
+  ${buildCats(listaEgr, maxEgr, 'egr')}` : ''}
+
+  ${listaIng.length > 0 ? `
+  <div class="sec-title">Ingresos por rubro</div>
+  ${buildCats(listaIng, maxIng, 'ing')}` : ''}
+
+  ${filtrados.length === 0 ? '<div class="empty"><div class="ico">📊</div><p>Sin movimientos para este período.</p></div>' : ''}
+  `;
 }
 
-function renderHistorial() {
-  const el = document.getElementById('historial');
-  if (historialLocal.length === 0) {
-    el.innerHTML = '<p class="historial-empty">Los movimientos registrados aparecerán aquí.</p>';
-    return;
+/* ═══════════════════════════════════════════
+   TAB CONFIG
+═══════════════════════════════════════════ */
+function buildConfig() {
+  const saved = getScriptUrl();
+  return `
+  <div class="cfg-card">
+    <div class="cfg-title">URL del Google Apps Script</div>
+    <div class="cfg-desc">
+      Pegá acá la URL de tu Web App para que la app pueda guardar y leer los movimientos del Google Sheet.
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label>Web App URL</label>
+      <input id="cfg-url" type="url" class="inp" placeholder="https://script.google.com/macros/s/…/exec"
+        value="${esc(saved)}" autocomplete="off">
+    </div>
+    <button class="btn-secondary" onclick="saveScriptUrl()">💾 Guardar URL</button>
+  </div>
+
+  <div class="cfg-card">
+    <div class="cfg-title">Recargar movimientos</div>
+    <div class="cfg-desc">Si cargaste movimientos desde otro dispositivo y no aparecen, recargá los datos.</div>
+    <button class="btn-secondary" onclick="loadMovimientos()">🔄 Recargar datos</button>
+  </div>
+
+  <div class="cfg-card">
+    <div class="cfg-title">Agregar al inicio (Android)</div>
+    <div class="cfg-note">
+      Abrí esta URL en Chrome → tocá los tres puntos ⋮ → "Agregar a pantalla de inicio".<br>
+      Queda como ícono de app, sin barra del navegador.
+    </div>
+  </div>
+
+  <div class="cfg-card">
+    <div class="cfg-title">Estado</div>
+    <div class="cfg-note">
+      📊 ${movimientos.length} movimientos cargados<br>
+      💾 Datos en Google Sheets<br>
+      🔗 Sincronizado entre dispositivos
+    </div>
+  </div>`;
+}
+
+function saveScriptUrl() {
+  const url = document.getElementById('cfg-url')?.value.trim();
+  if (!url) return showToast('Pegá una URL válida', false);
+  localStorage.setItem('cdm-tesoreria-url', url);
+  showToast('URL guardada ✓');
+  loadMovimientos();
+}
+
+function getScriptUrl() {
+  return localStorage.getItem('cdm-tesoreria-url') || '';
+}
+
+/* ═══════════════════════════════════════════
+   HTTP
+═══════════════════════════════════════════ */
+async function post(url, data) {
+  const res = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'text/plain' }
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+/* ═══════════════════════════════════════════
+   CARGA DE DATOS
+═══════════════════════════════════════════ */
+async function loadMovimientos() {
+  const url = getScriptUrl();
+  if (!url) { hideOverlay(); goTab('config'); showToast('Configurá la URL del script', false); return; }
+  showOverlay('Cargando movimientos…');
+  try {
+    const r = await post(url, { action: 'list' });
+    if (!r.ok) throw new Error(r.error || 'Error');
+    movimientos = (r.movimientos || []).map(m => ({ ...m, fecha: normFecha(m.fecha) }));
+    showToast('Datos cargados ✓');
+  } catch(e) {
+    showToast('Error al conectar con el script', false);
   }
-  el.innerHTML = historialLocal.slice(0, 8).map(({ payload, tipo, ingreso, egreso }) => {
-    let montoHtml = '';
-    if (tipo === 'ambos') {
-      montoHtml = `
-        ${ingreso > 0 ? `<div class="historial-monto ingreso">+${fmtMonto(ingreso)}</div>` : ''}
-        ${egreso  > 0 ? `<div class="historial-monto egreso">−${fmtMonto(egreso)}</div>`  : ''}
-      `;
-    } else if (tipo === 'ingreso') {
-      montoHtml = `<div class="historial-monto ingreso">+${fmtMonto(ingreso)}</div>`;
-    } else {
-      montoHtml = `<div class="historial-monto egreso">−${fmtMonto(egreso)}</div>`;
-    }
-    return `
-      <div class="historial-item">
-        <div class="historial-left">
-          <div class="historial-rubro">${payload.rubro}</div>
-          <div class="historial-concepto">${payload.concepto}</div>
-          <div class="historial-fecha">${payload.fecha} · ${payload.cuenta} · ${payload.metodo}</div>
-        </div>
-        <div style="text-align:right">${montoHtml}</div>
-      </div>`;
-  }).join('');
+  hideOverlay();
+  renderTab();
 }
 
-// ══ Limpiar ══
-function limpiarForm() {
-  document.getElementById('f-rubro-search').value  = '';
-  document.getElementById('f-rubro-cod').value     = '';
-  document.getElementById('f-rubro-nombre').value  = '';
-  document.getElementById('f-concepto').value      = '';
-  document.getElementById('f-monto').value         = '';
-  document.getElementById('f-ingreso').value       = '';
-  document.getElementById('f-egreso').value        = '';
-  document.getElementById('f-observaciones').value = '';
-  setFechaHoy();
+/* ═══════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════ */
+function showOverlay(msg) {
+  document.getElementById('overlay-msg').textContent = msg || 'Cargando…';
+  document.getElementById('overlay').classList.remove('hidden');
 }
+function hideOverlay() { document.getElementById('overlay').classList.add('hidden'); }
+function showToast(msg, ok=true) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (ok ? 'ok' : 'err');
+  t.textContent = msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+/* ═══════════════════════════════════════════
+   ARRANQUE
+═══════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', async () => {
+  renderTab();
+  hideOverlay();
+  goTab('nuevo');
+  await loadMovimientos();
+});
 </script>
-
 </body>
 </html>
