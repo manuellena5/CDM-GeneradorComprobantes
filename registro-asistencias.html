@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0f2540">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Asistencias · CDM</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0f2540; --navy2: #1a3a5c; --navy3: #f0f4f8;
+  --gold: #c8972a;
+  --green: #1a9e5c; --green-bg: #e6f7ef;
+  --blue: #1a6bbf;  --blue-bg: #e6f0ff;
+  --amber: #b06000; --amber-bg: #fff3cd;
+  --red: #c0392b;   --red-bg: #fdecea;
+  --border: #e0e6ed; --text: #1a2a3a; --text3: #6b7a8d;
+  --r: 12px; --mono: 'DM Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: #f5f7fa; color: var(--text); }
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+
+#app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: 40px; }
+
+/* ── Header ── */
+.hdr {
+  background: var(--navy); padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 10;
+}
+.hdr-title { font-size: 17px; font-weight: 600; color: #fff; flex: 1; }
+.hdr-title span { opacity: .5; font-weight: 400; }
+.hdr-cfg-btn {
+  background: none; border: none; color: rgba(255,255,255,.6);
+  font-size: 20px; padding: 4px 6px;
+}
+
+/* ── Config overlay ── */
+.cfg-bar {
+  background: var(--navy2); padding: 10px 16px;
+  display: none; gap: 8px; align-items: center;
+}
+.cfg-bar.visible { display: flex; }
+.cfg-bar input {
+  flex: 1; background: rgba(255,255,255,.12); border: none;
+  color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 13px;
+}
+.cfg-bar input::placeholder { color: rgba(255,255,255,.4); }
+.cfg-bar button {
+  background: var(--gold); color: #fff; border: none;
+  border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600;
+}
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 0; background: var(--navy); padding: 0 16px 12px; }
+.tab-btn {
+  flex: 1; background: rgba(255,255,255,.1); color: rgba(255,255,255,.7);
+  border: none; border-radius: 8px; padding: 9px 0; font-size: 14px; font-weight: 500;
+  margin: 0 3px; transition: all .15s;
+}
+.tab-btn.activo { background: #fff; color: var(--navy); font-weight: 600; }
+
+/* ── Fecha ── */
+.fecha-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px 10px; background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+.fecha-row label { font-size: 13px; color: var(--text3); white-space: nowrap; }
+.fecha-row input[type=date] {
+  flex: 1; border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 12px; font-size: 15px; font-weight: 600; color: var(--navy);
+  font-family: inherit; background: #fff;
+}
+.fecha-nav-btn {
+  background: var(--navy3); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; font-size: 16px; color: var(--text3);
+}
+
+/* ── Leyenda ── */
+.leyenda-bar {
+  padding: 7px 16px; background: var(--navy3);
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--text3);
+}
+.ley-item strong { font-family: var(--mono); font-weight: 700; }
+.ley-p { color: var(--green); }
+.ley-f { color: var(--blue); }
+.ley-a { color: var(--amber); }
+.ley-x { color: var(--red); }
+
+/* ── Lista de jugadores ── */
+.lista-header {
+  padding: 10px 16px 6px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.lista-header h3 { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; }
+.sel-todos-btn {
+  font-size: 12px; color: var(--blue); background: none; border: none;
+  font-weight: 600; padding: 2px 6px;
+}
+
+.jugador-row {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+}
+.jugador-top {
+  display: flex; align-items: center; gap: 10px;
+}
+.jug-nombre {
+  flex: 1; font-size: 14px; font-weight: 600; color: var(--navy);
+  line-height: 1.2;
+}
+.jug-info { font-size: 11px; color: var(--text3); font-weight: 400; }
+.estado-btns { display: flex; gap: 5px; }
+.est-btn {
+  border: 1.5px solid var(--border); border-radius: 8px;
+  background: #fff; color: var(--text3);
+  padding: 5px 0; width: 40px; text-align: center;
+  font-size: 11px; font-weight: 600; transition: all .12s;
+  line-height: 1.1;
+}
+.est-btn .ico { display: block; font-size: 14px; }
+
+/* Estado activo */
+.est-btn.sel-Presente   { background: var(--green-bg);  color: var(--green);  border-color: var(--green);  }
+.est-btn.sel-Afuera     { background: var(--blue-bg);   color: var(--blue);   border-color: var(--blue);   }
+.est-btn.sel-AusenteAviso { background: var(--amber-bg); color: var(--amber); border-color: var(--amber); }
+.est-btn.sel-Ausente    { background: var(--red-bg);    color: var(--red);    border-color: var(--red);    }
+
+/* Nota (visible solo cuando AusenteAviso) */
+.jug-nota {
+  display: none; margin-top: 8px;
+}
+.jug-nota input {
+  width: 100%; border: 1px solid var(--amber); border-radius: 8px;
+  padding: 7px 10px; font-size: 13px; color: var(--text);
+  background: var(--amber-bg); outline: none;
+}
+.jug-nota input::placeholder { color: var(--amber); opacity: .7; }
+
+/* ── Contador resumen ── */
+.contador-bar {
+  display: flex; gap: 0; background: #fff;
+  border-top: 1px solid var(--border); border-bottom: 2px solid var(--border);
+  position: sticky; bottom: 0; z-index: 5;
+}
+.cnt-item {
+  flex: 1; text-align: center; padding: 8px 4px; font-size: 11px;
+  border-right: 1px solid var(--border);
+}
+.cnt-item:last-child { border-right: none; }
+.cnt-item .cnt-n { display: block; font-size: 18px; font-weight: 700; font-family: var(--mono); }
+.cnt-item.c-p  .cnt-n { color: var(--green); }
+.cnt-item.c-f  .cnt-n { color: var(--blue); }
+.cnt-item.c-av .cnt-n { color: var(--amber); }
+.cnt-item.c-a  .cnt-n { color: var(--red); }
+
+/* ── Botón guardar ── */
+.btn-guardar {
+  display: block; width: calc(100% - 32px); margin: 14px 16px;
+  background: var(--navy); color: #fff; border: none; border-radius: 12px;
+  padding: 15px; font-size: 16px; font-weight: 600; letter-spacing: .02em;
+}
+.btn-guardar:active { opacity: .85; }
+.btn-guardar:disabled { opacity: .4; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--navy); color: #fff; padding: 10px 22px;
+  border-radius: 24px; font-size: 14px; font-weight: 500;
+  opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999;
+  white-space: nowrap;
+}
+.toast.visible { opacity: 1; }
+.toast.ok   { background: var(--green); }
+.toast.err  { background: var(--red); }
+
+/* ── Spinner ── */
+.loading { padding: 40px; text-align: center; color: var(--text3); }
+.spinner {
+  width: 28px; height: 28px; border: 3px solid var(--border);
+  border-top-color: var(--navy); border-radius: 50%;
+  animation: spin .7s linear infinite; margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── TAB RESUMEN ── */
+.resumen-wrap { padding: 12px 16px; }
+.semana-nav {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.semana-nav button {
+  background: var(--navy3); border: 1px solid var(--border); border-radius: 8px;
+  padding: 7px 12px; font-size: 16px; color: var(--text3);
+}
+.semana-nav .semana-lbl {
+  flex: 1; text-align: center; font-size: 14px; font-weight: 600; color: var(--navy);
+}
+.res-table-wrap { overflow-x: auto; }
+.res-table {
+  border-collapse: collapse; font-size: 12px; width: 100%;
+  background: #fff; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.res-table th {
+  background: var(--navy); color: rgba(255,255,255,.9);
+  padding: 8px 6px; text-align: center; font-size: 11px;
+  white-space: nowrap; font-weight: 600;
+}
+.res-table th.col-nombre { text-align: left; padding-left: 12px; position: sticky; left: 0; background: var(--navy); z-index: 2; }
+.res-table td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--border); }
+.res-table td.col-nombre {
+  text-align: left; padding-left: 12px; font-weight: 600; font-size: 12px;
+  color: var(--navy); position: sticky; left: 0; background: #fff; z-index: 1;
+  white-space: nowrap;
+}
+.res-table tr:last-child td { border-bottom: none; }
+.badge-p  { background: var(--green-bg);  color: var(--green);  border-radius: 6px; padding: 2px 6px; font-weight: 700; }
+.badge-f  { background: var(--blue-bg);   color: var(--blue);   border-radius: 6px; padding: 2px 6px; font-weight: 700; }
+.badge-av { background: var(--amber-bg);  color: var(--amber);  border-radius: 6px; padding: 2px 6px; font-weight: 700; }
+.badge-au { color: var(--border); font-size: 14px; }
+.res-table tfoot td { background: rgba(15,37,64,.05); font-weight: 700; font-family: var(--mono); font-size: 11px; color: var(--navy); border-top: 2px solid var(--border); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-title">Asistencias <span>CDM</span></div>
+    <button class="hdr-cfg-btn" onclick="toggleCfg()" title="Configurar API">⚙</button>
+  </div>
+  <div class="cfg-bar" id="cfg-bar">
+    <input type="url" id="cfg-url" placeholder="URL del script de CDM…">
+    <button onclick="guardarCfg()">Guardar</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn activo" id="tab-btn-reg" onclick="goTab('reg')">📋 Registrar</button>
+    <button class="tab-btn"        id="tab-btn-res" onclick="goTab('res')">📊 Resumen</button>
+  </div>
+
+  <!-- TAB: Registrar -->
+  <div id="tab-reg">
+    <div class="fecha-row">
+      <label>Entrenamiento</label>
+      <button class="fecha-nav-btn" onclick="cambiarFecha(-1)">‹</button>
+      <input type="date" id="inp-fecha" onchange="onFechaChange()">
+      <button class="fecha-nav-btn" onclick="cambiarFecha(1)">›</button>
+    </div>
+
+    <!-- Leyenda de estados -->
+    <div class="leyenda-bar">
+      <span class="ley-item"><strong class="ley-p">P</strong> Presente</span>
+      <span class="ley-item"><strong class="ley-f">EA</strong> Entrenó afuera</span>
+      <span class="ley-item"><strong class="ley-a">AA</strong> Avisó ausencia</span>
+      <span class="ley-item"><strong class="ley-x">F</strong> Falta s/aviso</span>
+    </div>
+
+    <div id="lista-wrap">
+      <div class="loading"><div class="spinner"></div>Cargando jugadores…</div>
+    </div>
+
+    <!-- Contador flotante -->
+    <div class="contador-bar" id="contador-bar" style="display:none">
+      <div class="cnt-item c-p"><span class="cnt-n" id="cnt-p">0</span>Presentes</div>
+      <div class="cnt-item c-f"><span class="cnt-n" id="cnt-f">0</span>E. Afuera</div>
+      <div class="cnt-item c-av"><span class="cnt-n" id="cnt-av">0</span>Avisaron</div>
+      <div class="cnt-item c-a"><span class="cnt-n" id="cnt-a">0</span>Faltaron</div>
+    </div>
+
+    <button class="btn-guardar" id="btn-guardar" onclick="guardar()" disabled>Guardar asistencia</button>
+  </div>
+
+  <!-- TAB: Resumen -->
+  <div id="tab-res" style="display:none">
+    <div class="resumen-wrap">
+      <div class="semana-nav">
+        <button onclick="cambiarSemana(-1)">‹</button>
+        <span class="semana-lbl" id="semana-lbl">Cargando…</span>
+        <button onclick="cambiarSemana(1)">›</button>
+      </div>
+      <div id="resumen-cont"><div class="loading"><div class="spinner"></div>Cargando…</div></div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── API ─── */
+const CDM_KEY = 'cdm-api-url';
+
+function getApiUrl() {
+  // Prioridad: ?api= en URL → localStorage
+  const p = new URLSearchParams(window.location.search).get('api');
+  if (p) { localStorage.setItem(CDM_KEY, p); return p; }
+  return localStorage.getItem(CDM_KEY) || '';
+}
+
+async function apiPost(action, payload) {
+  const url = getApiUrl();
+  if (!url) throw new Error('URL no configurada');
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  const json = await r.json();
+  if (!json.ok) throw new Error(json.error || 'Error del servidor');
+  return json;
+}
+
+function showToast(msg, ok = true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast visible ' + (ok ? 'ok' : 'err');
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+/* ─── Config ─── */
+function toggleCfg() {
+  const bar = document.getElementById('cfg-bar');
+  const visible = bar.classList.toggle('visible');
+  if (visible) document.getElementById('cfg-url').value = getApiUrl();
+}
+function guardarCfg() {
+  const v = document.getElementById('cfg-url').value.trim();
+  if (v) { localStorage.setItem(CDM_KEY, v); showToast('URL guardada'); }
+  document.getElementById('cfg-bar').classList.remove('visible');
+  init();
+}
+
+/* ─── Estado ─── */
+let jugadores  = [];
+let estados    = {};   // nombre → 'Presente'|'Afuera'|'AusenteAviso'|'Ausente'
+let notas      = {};   // nombre → string
+let semanaOffset = 0;  // para resumen
+
+/* ─── Fecha ─── */
+function hoy() {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+function cambiarFecha(delta) {
+  const inp = document.getElementById('inp-fecha');
+  const d   = new Date(inp.value + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  inp.value = d.toISOString().split('T')[0];
+  cargarEstadoFecha();
+}
+function onFechaChange() { cargarEstadoFecha(); }
+
+/* ─── Carga inicial ─── */
+async function init() {
+  document.getElementById('inp-fecha').value = hoy();
+  if (!getApiUrl()) {
+    document.getElementById('lista-wrap').innerHTML =
+      `<div class="loading" style="color:#c0392b">
+        Tocá ⚙ arriba para configurar la URL del sistema.
+       </div>`;
+    return;
+  }
+  try {
+    const r = await apiPost('getJugadores', {});
+    jugadores = (r.jugadores || [])
+      .filter(j => (j.activo || 'SI').toUpperCase() !== 'NO')
+      .sort((a, b) => {
+        // CT primero, luego JUGADOR; dentro de cada grupo, por apellido
+        const ra = (a.rol || '').toUpperCase() === 'CT' ? 0 : 1;
+        const rb = (b.rol || '').toUpperCase() === 'CT' ? 0 : 1;
+        if (ra !== rb) return ra - rb;
+        return (a.apellido || a.nombre).localeCompare(b.apellido || b.nombre);
+      });
+    // Estado inicial: todos Ausente
+    jugadores.forEach(j => { estados[j.nombre] = 'Ausente'; notas[j.nombre] = ''; });
+    cargarEstadoFecha();
+  } catch(e) {
+    document.getElementById('lista-wrap').innerHTML =
+      `<div class="loading" style="color:#c0392b">Error al cargar: ${e.message}</div>`;
+  }
+}
+
+/* ─── Cargar estado guardado para la fecha seleccionada ─── */
+async function cargarEstadoFecha() {
+  const fecha = document.getElementById('inp-fecha').value;
+  // Reset a Ausente
+  jugadores.forEach(j => { estados[j.nombre] = 'Ausente'; notas[j.nombre] = ''; });
+  try {
+    const r = await apiPost('getAsistencias', { filtros: { fechaDesde: fecha, fechaHasta: fecha } });
+    (r.asistencias || []).forEach(a => {
+      const est = a.estado || a.tipo;
+      if      (est === 'Presente'       || est === 'Local')         estados[a.jugador] = 'Presente';
+      else if (est === 'Entrenó Afuera' || est === 'Afuera')        estados[a.jugador] = 'Afuera';
+      else if (est === 'Ausente c/Aviso'|| est === 'AusenteAviso')  estados[a.jugador] = 'AusenteAviso';
+      else if (est === 'Ausente')                                   estados[a.jugador] = 'Ausente';
+    });
+  } catch(_) { /* si falla, todo Ausente — igual renderizamos */ }
+  renderLista();
+}
+
+/* ─── Render lista de jugadores ─── */
+function renderLista() {
+  if (!jugadores.length) return;
+
+  let html = `<div class="lista-header">
+    <h3>${jugadores.length} jugadores</h3>
+    <button class="sel-todos-btn" onclick="marcarTodos('Presente')">Todos Presente</button>
+  </div>`;
+
+  let rolActual = null;
+  jugadores.forEach(j => {
+    const rol = (j.rol || 'JUGADOR').toUpperCase();
+    if (rol !== rolActual) {
+      rolActual = rol;
+      html += `<div style="padding:8px 16px 4px;font-size:11px;font-weight:700;color:var(--text3);
+                text-transform:uppercase;letter-spacing:.07em;background:var(--navy3);
+                border-bottom:1px solid var(--border)">${rol === 'CT' ? '👔 Cuerpo Técnico' : '⚽ Jugadores'}</div>`;
+    }
+
+    const est    = estados[j.nombre] || 'Ausente';
+    const notaVisible = est === 'AusenteAviso' ? 'display:block' : 'display:none';
+
+    html += `<div class="jugador-row" id="row-${safeid(j.nombre)}">
+      <div class="jugador-top">
+        <span class="jug-nombre">${esc(apellidoNombre(j))}</span>
+        <div class="estado-btns">
+          <button class="est-btn ${est==='Presente'?'sel-Presente':''}"
+            onclick="setEstado('${safeid(j.nombre)}','Presente')">
+            <span class="ico">✓</span>P
+          </button>
+          <button class="est-btn ${est==='Afuera'?'sel-Afuera':''}"
+            onclick="setEstado('${safeid(j.nombre)}','Afuera')">
+            <span class="ico">↗</span>EA
+          </button>
+          <button class="est-btn ${est==='AusenteAviso'?'sel-AusenteAviso':''}"
+            onclick="setEstado('${safeid(j.nombre)}','AusenteAviso')">
+            <span class="ico">!</span>AA
+          </button>
+          <button class="est-btn ${est==='Ausente'?'sel-Ausente':''}"
+            onclick="setEstado('${safeid(j.nombre)}','Ausente')">
+            <span class="ico">✗</span>F
+          </button>
+        </div>
+      </div>
+      <div class="jug-nota" id="nota-${safeid(j.nombre)}" style="${notaVisible}">
+        <input type="text" placeholder="Motivo ausencia…"
+          value="${esc(notas[j.nombre] || '')}"
+          oninput="notas['${j.nombre}']=this.value">
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('lista-wrap').innerHTML = html;
+  document.getElementById('contador-bar').style.display = '';
+  document.getElementById('btn-guardar').disabled = false;
+  actualizarContador();
+}
+
+/* ─── Acciones ─── */
+function setEstado(id, estado) {
+  const nombre = idToNombre(id);
+  if (!nombre) return;
+  estados[nombre] = estado;
+  // Actualizar botones del row
+  const row = document.getElementById('row-' + id);
+  row.querySelectorAll('.est-btn').forEach(b => {
+    b.className = 'est-btn';
+    const txt = b.textContent.trim();
+    if ((estado === 'Presente'     && b.textContent.includes('✓')) ||
+        (estado === 'Afuera'       && b.textContent.includes('↗')) ||
+        (estado === 'AusenteAviso' && b.textContent.includes('!')) ||
+        (estado === 'Ausente'      && b.textContent.includes('✗'))) {
+      b.className = 'est-btn sel-' + estado;
+    }
+  });
+  // Nota
+  const notaDiv = document.getElementById('nota-' + id);
+  notaDiv.style.display = estado === 'AusenteAviso' ? 'block' : 'none';
+  actualizarContador();
+}
+
+function marcarTodos(estado) {
+  jugadores.forEach(j => {
+    estados[j.nombre] = estado;
+    const id = safeid(j.nombre);
+    const row = document.getElementById('row-' + id);
+    if (row) row.querySelectorAll('.est-btn').forEach(b => {
+      b.className = 'est-btn';
+      if (b.textContent.includes('✓') && estado === 'Presente') b.className = 'est-btn sel-Presente';
+    });
+    const notaDiv = document.getElementById('nota-' + id);
+    if (notaDiv) notaDiv.style.display = 'none';
+  });
+  actualizarContador();
+}
+
+function actualizarContador() {
+  let p = 0, f = 0, av = 0, a = 0;
+  jugadores.forEach(j => {
+    const e = estados[j.nombre];
+    if (e === 'Presente') p++;
+    else if (e === 'Afuera') f++;
+    else if (e === 'AusenteAviso') av++;
+    else a++;
+  });
+  document.getElementById('cnt-p').textContent  = p;
+  document.getElementById('cnt-f').textContent  = f;
+  document.getElementById('cnt-av').textContent = av;
+  document.getElementById('cnt-a').textContent  = a;
+}
+
+/* ─── Guardar ─── */
+async function guardar() {
+  const btn   = document.getElementById('btn-guardar');
+  const fecha = document.getElementById('inp-fecha').value;
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+
+  // Leer notas actualizadas del DOM
+  jugadores.forEach(j => {
+    const inp = document.querySelector(`#nota-${safeid(j.nombre)} input`);
+    if (inp) notas[j.nombre] = inp.value;
+  });
+
+  const payload = {
+    fecha,
+    jugadores: jugadores.map(j => ({
+      nombre: j.nombre,
+      estado: estados[j.nombre] || 'Ausente',
+      notas:  notas[j.nombre] || '',
+    }))
+  };
+
+  try {
+    const r = await apiPost('saveAsistencia', { asistencia: payload });
+    showToast(`✓ Guardado — ${r.guardados} registros`, true);
+  } catch(e) {
+    showToast('Error: ' + e.message, false);
+  }
+  btn.disabled = false;
+  btn.textContent = 'Guardar asistencia';
+}
+
+/* ─── TAB RESUMEN ─── */
+function goTab(t) {
+  document.getElementById('tab-reg').style.display = t === 'reg' ? '' : 'none';
+  document.getElementById('tab-res').style.display = t === 'res' ? '' : 'none';
+  document.getElementById('tab-btn-reg').className = 'tab-btn' + (t === 'reg' ? ' activo' : '');
+  document.getElementById('tab-btn-res').className = 'tab-btn' + (t === 'res' ? ' activo' : '');
+  if (t === 'res') renderResumen();
+}
+
+function cambiarSemana(d) { semanaOffset += d; renderResumen(); }
+
+async function renderResumen() {
+  // Calcular lunes de la semana actual + offset
+  const hoyDate = new Date();
+  hoyDate.setDate(hoyDate.getDate() + semanaOffset * 7);
+  const dow = (hoyDate.getDay() + 6) % 7; // 0=Lun
+  const lunes = new Date(hoyDate);
+  lunes.setDate(hoyDate.getDate() - dow);
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+
+  const toISO = d => d.toISOString().split('T')[0];
+  const dias  = Array.from({length: 7}, (_, i) => {
+    const d = new Date(lunes); d.setDate(lunes.getDate() + i);
+    return { fecha: toISO(d), d };
+  });
+
+  const DIAS_NOM = ['L','M','X','J','V','S','D'];
+  const lbl = `${lunes.getDate()}/${lunes.getMonth()+1} — ${domingo.getDate()}/${domingo.getMonth()+1}/${domingo.getFullYear()}`;
+  document.getElementById('semana-lbl').textContent = lbl;
+
+  const cont = document.getElementById('resumen-cont');
+  cont.innerHTML = '<div class="loading"><div class="spinner"></div>Cargando…</div>';
+
+  try {
+    const r = await apiPost('getAsistencias', { filtros: { fechaDesde: toISO(lunes), fechaHasta: toISO(domingo) } });
+    const data = {};
+    (r.asistencias || []).forEach(a => {
+      if (!data[a.jugador]) data[a.jugador] = {};
+      data[a.jugador][a.fecha] = a.estado || a.tipo;
+    });
+
+    // Filas: jugadores con actividad en la semana + todos del plantel
+    const jugSet = new Set([...jugadores.map(j => j.nombre), ...Object.keys(data)]);
+    const jugList = [...jugSet].sort((a, b) => a.localeCompare(b));
+
+    const thDias = dias.map((d, i) => {
+      const esHoy = toISO(new Date()) === d.fecha;
+      return `<th${esHoy?' style="color:var(--gold)"':''}>${DIAS_NOM[i]}<br><small>${d.d.getDate()}/${d.d.getMonth()+1}</small></th>`;
+    }).join('');
+
+    const totales = Array(7).fill(0);
+    const filas = jugList.map(nombre => {
+      const jug = jugadores.find(j => j.nombre === nombre);
+      const disp = jug ? apellidoNombre(jug) : nombre;
+      const celdas = dias.map((d, i) => {
+        const est = (data[nombre] || {})[d.fecha];
+        if (est === 'Presente'       || est === 'Local')        { totales[i]++; return `<td><span class="badge-p">P</span></td>`; }
+        if (est === 'Entrenó Afuera' || est === 'Afuera')       { totales[i]++; return `<td><span class="badge-f">EA</span></td>`; }
+        if (est === 'Ausente c/Aviso'|| est === 'AusenteAviso') { return `<td><span class="badge-av">AA</span></td>`; }
+        if (est === 'Ausente')                                  { return `<td><span class="badge-au" style="color:var(--red);opacity:.5">F</span></td>`; }
+        return `<td><span class="badge-au">—</span></td>`;
+      }).join('');
+      return `<tr><td class="col-nombre">${esc(disp)}</td>${celdas}</tr>`;
+    }).join('');
+
+    const tfootCeldas = totales.map(n => `<td>${n||'—'}</td>`).join('');
+
+    cont.innerHTML = `
+      <div class="res-table-wrap">
+        <table class="res-table">
+          <thead><tr>
+            <th class="col-nombre">Jugador</th>${thDias}
+          </tr></thead>
+          <tbody>${filas}</tbody>
+          <tfoot><tr>
+            <td class="col-nombre">Presentes</td>${tfootCeldas}
+          </tr></tfoot>
+        </table>
+      </div>`;
+  } catch(e) {
+    cont.innerHTML = `<div class="loading" style="color:#c0392b">Error: ${e.message}</div>`;
+  }
+}
+
+/* ─── Utils ─── */
+// Mapa nombre → id seguro (para usar en atributos HTML)
+const _idMap = {};
+const _nombreMap = {};
+function safeid(nombre) {
+  if (!_idMap[nombre]) {
+    const id = 'j' + Object.keys(_idMap).length;
+    _idMap[nombre] = id;
+    _nombreMap[id] = nombre;
+  }
+  return _idMap[nombre];
+}
+function idToNombre(id) { return _nombreMap[id] || null; }
+
+function apellidoNombre(j) {
+  if (j.apellido) return j.apellido.toUpperCase() + ' ' + (j.nombreDisplay || '');
+  return j.nombre;
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

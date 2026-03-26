@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Tesorería · Club </title>
+<link rel="stylesheet" href="style-shared.css">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -208,21 +209,17 @@ textarea.inp { resize: none; }
 
   <div class="content" id="content"></div>
 
-  <nav class="bnav">
-    <button class="bnav-btn active" id="nav-nuevo"      onclick="goTab('nuevo')">
-      <span class="bnav-icon">＋</span><span class="bnav-lbl">Nuevo</span>
-    </button>
-    <button class="bnav-btn" id="nav-movimientos" onclick="goTab('movimientos')">
-      <span class="bnav-icon">📋</span><span class="bnav-lbl">Movimientos</span>
-    </button>
-    <button class="bnav-btn" id="nav-resumen"    onclick="goTab('resumen')">
-      <span class="bnav-icon">📊</span><span class="bnav-lbl">Resumen</span>
-    </button>
-    <button class="bnav-btn" id="nav-config"     onclick="goTab('config')">
-      <span class="bnav-icon">⚙️</span><span class="bnav-lbl">Config</span>
-    </button>
-  </nav>
+  <!-- Tabs internos de tesorería -->
+  <div class="tabs-row" style="padding: 8px 18px 12px;">
+    <button class="tab-pill active" id="nav-nuevo"        onclick="goTab('nuevo')">＋ Nuevo</button>
+    <button class="tab-pill"        id="nav-movimientos"  onclick="goTab('movimientos')">📋 Movimientos</button>
+    <button class="tab-pill"        id="nav-resumen"      onclick="goTab('resumen')">📊 Resumen</button>
+    <button class="tab-pill"        id="nav-config"       onclick="goTab('config')">⚙️ Config</button>
+  </div>
 </div>
+
+<!-- Navegación compartida entre módulos -->
+<div id="bottom-nav"></div>
 
 <div id="toasts"></div>
 
@@ -294,8 +291,11 @@ const F = {
   rubCod: '', rubNom: '',
   concepto: '', ingreso: '', egreso: '', monto: '',
   cuenta: 'Naranja X', metodo: 'Transferencia',
-  observaciones: ''
+  observaciones: '', entidad: ''
 };
+
+let entidadesJugadores  = []; // cargado desde JUGADORES
+let entidadesAdhesiones = []; // cargado desde ADHESIONES
 
 /* ═══════════════════════════════════════════
    UTILS
@@ -336,7 +336,7 @@ function esc(s) {
 ═══════════════════════════════════════════ */
 function goTab(t) {
   currentTab = t;
-  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
   document.getElementById('nav-'+t)?.classList.add('active');
   renderTab();
 }
@@ -391,6 +391,25 @@ function buildNuevo() {
     <div class="field">
       <label>Concepto / Descripción</label>
       <input id="f-concepto" type="text" class="inp" placeholder="ej: Remis | Refuerzos" value="${esc(F.concepto)}">
+    </div>
+
+    <div class="field">
+      <label>Entidad <span style="font-weight:400;text-transform:none">(jugador / cuerpo técnico / adherente)</span></label>
+      <select id="f-entidad" class="inp">
+        <option value="">— sin especificar —</option>
+        ${entidadesJugadores.length ? `
+          <optgroup label="⚽ Jugadores / Cuerpo técnico">
+            ${entidadesJugadores.map(e => `<option value="${esc(e)}"${e===F.entidad?' selected':''}>${esc(e)}</option>`).join('')}
+          </optgroup>` : ''}
+        ${entidadesAdhesiones.length ? `
+          <optgroup label="🤝 Adhesiones">
+            ${entidadesAdhesiones.map(e => `<option value="${esc(e)}"${e===F.entidad?' selected':''}>${esc(e)}</option>`).join('')}
+          </optgroup>` : ''}
+        <option value="__otro__"${'__otro__'===F.entidad?' selected':''}>✏️ Otro (ingresar manualmente)</option>
+      </select>
+      <input id="f-entidad-manual" type="text" class="inp" placeholder="Nombre de la persona"
+        value="${F.entidad==='__otro__' ? '' : ''}"
+        style="margin-top:6px; display:${F.entidad==='__otro__' ? '' : 'none'}">
     </div>
 
     ${esAmbos ? `
@@ -451,6 +470,21 @@ function attachNuevoListeners() {
     'f-ingreso':  v => F.ingreso = v,
     'f-egreso':   v => F.egreso = v,
   };
+
+  // Listener especial para el select de entidad (muestra/oculta campo manual)
+  const selEnt = document.getElementById('f-entidad');
+  const manEnt = document.getElementById('f-entidad-manual');
+  if (selEnt) {
+    selEnt.addEventListener('change', () => {
+      F.entidad = selEnt.value;
+      if (manEnt) manEnt.style.display = selEnt.value === '__otro__' ? '' : 'none';
+    });
+  }
+  if (manEnt) {
+    manEnt.addEventListener('input', () => {
+      F.entidad = manEnt.value;
+    });
+  }
   Object.entries(map).forEach(([id, fn]) => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', () => fn(el.value));
@@ -535,6 +569,7 @@ async function submitForm() {
       cuenta:   F.cuenta,
       metodo:   F.metodo,
       observaciones: F.observaciones.trim(),
+      entidad:  (F.entidad === '__otro__' ? '' : F.entidad).trim(),
     }
   };
 
@@ -561,7 +596,7 @@ function resetForm() {
   F.tipo = 'egreso'; F.fecha = today();
   F.rubCod = ''; F.rubNom = '';
   F.concepto = ''; F.ingreso = ''; F.egreso = ''; F.monto = '';
-  F.observaciones = '';
+  F.observaciones = ''; F.entidad = '';
 }
 
 /* ═══════════════════════════════════════════
@@ -762,13 +797,13 @@ function buildConfig() {
 function saveScriptUrl() {
   const url = document.getElementById('cfg-url')?.value.trim();
   if (!url) return showToast('Pegá una URL válida', false);
-  localStorage.setItem('cdm-tesoreria-url', url);
+  localStorage.setItem('cdm-api-url', url);
   showToast('URL guardada ✓');
   loadMovimientos();
 }
 
 function getScriptUrl() {
-  return localStorage.getItem('cdm-tesoreria-url') || '';
+  return localStorage.getItem('cdm-api-url') || '';
 }
 
 /* ═══════════════════════════════════════════
@@ -822,12 +857,38 @@ function showToast(msg, ok=true) {
 /* ═══════════════════════════════════════════
    ARRANQUE
 ═══════════════════════════════════════════ */
+async function loadEntidades() {
+  if (!getScriptUrl()) return;
+  try {
+    const [rJug, rAdh] = await Promise.all([
+      post(getScriptUrl(), { action: 'getJugadores' }),
+      post(getScriptUrl(), { action: 'getAdhesiones' }),
+    ]);
+    if (rJug.ok && rJug.jugadores) {
+      entidadesJugadores = rJug.jugadores
+        .filter(j => j.activo !== 'NO')
+        .map(j => j.nombre)
+        .sort();
+    }
+    if (rAdh.ok && rAdh.adhesiones) {
+      entidadesAdhesiones = rAdh.adhesiones
+        .filter(a => a.activo !== 'NO')
+        .map(a => a.nombre || a.razonSocial)
+        .filter(Boolean)
+        .sort();
+    }
+  } catch(e) { /* silencioso */ }
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   renderTab();
   hideOverlay();
   goTab('nuevo');
-  await loadMovimientos();
+  await Promise.all([loadMovimientos(), loadEntidades()]);
+  renderTab(); // re-render con la lista de entidades ya cargada
 });
 </script>
+<script src="api.js"></script>
+<script src="nav.js"></script>
 </body>
 </html>

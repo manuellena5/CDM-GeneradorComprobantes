@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0f2540">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Partidos · CDM</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style-shared.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+#app { max-width: 100%; margin: 0 auto; padding-bottom: 88px; min-height: 100vh; }
+
+/* ── Filtro de meses ── */
+.mes-scroll {
+  overflow-x: auto; padding: 12px 16px 6px;
+  display: flex; gap: 8px; scrollbar-width: none;
+}
+.mes-scroll::-webkit-scrollbar { display: none; }
+.mes-btn {
+  flex: 0 0 auto;
+  background: var(--navy3); color: var(--text3);
+  border: 1px solid var(--border); border-radius: 20px;
+  padding: 7px 16px; font-size: 13px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: all .15s;
+}
+.mes-btn.activo {
+  background: var(--navy); color: #fff; border-color: var(--navy);
+}
+
+/* ── Filtro de partidos ── */
+.partidos-filter {
+  padding: 4px 16px 8px; display: flex; flex-direction: column; gap: 6px;
+}
+.pf-header {
+  display: flex; align-items: center; gap: 8px; font-size: 11px;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .06em;
+}
+.pf-actions { display: flex; gap: 6px; margin-left: auto; }
+.pf-action-btn {
+  background: none; border: none; color: var(--gold); font-size: 12px;
+  font-weight: 600; cursor: pointer; padding: 0 4px;
+}
+.pf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.partido-chip {
+  flex: 0 0 auto; cursor: pointer; border-radius: 10px;
+  padding: 5px 12px; font-size: 12px; font-weight: 500; white-space: nowrap;
+  border: 1px solid var(--border); background: #fff; color: var(--navy);
+  transition: all .15s; line-height: 1.3; text-align: center;
+}
+.partido-chip .pc-fecha { display: block; font-size: 10px; color: var(--text3); font-weight: 400; }
+.partido-chip.activo {
+  background: var(--navy); color: #fff; border-color: var(--navy);
+}
+.partido-chip.activo .pc-fecha { color: rgba(255,255,255,.6); }
+.partido-chip:not(.activo) { opacity: .55; }
+
+/* ── Chips resumen ── */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 16px 12px; }
+.chip {
+  background: #fff; border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 14px; font-size: 12px; color: var(--text3);
+}
+.chip strong { display: block; font-size: 18px; font-weight: 600; color: var(--navy); font-family: var(--mono); }
+
+/* ── Tabla liquidación ── */
+.liq-wrap { overflow-x: auto; padding: 0 16px 24px; }
+.liq-table {
+  border-collapse: collapse; font-size: 12px;
+  background: #fff; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.liq-table th, .liq-table td {
+  padding: 9px 11px; white-space: nowrap;
+  text-align: right; border-bottom: 1px solid var(--border);
+}
+/* Sticky header */
+.liq-table thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--navy); color: rgba(255,255,255,.9);
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+/* Sticky primera columna */
+.col-nombre {
+  text-align: left !important;
+  position: sticky; left: 0; z-index: 1;
+  background: #fff; min-width: 130px; max-width: 160px;
+  font-weight: 600; color: var(--navy);
+  box-shadow: 2px 0 6px rgba(0,0,0,.06);
+}
+thead th.col-nombre { z-index: 3; background: var(--navy); }
+
+/* Separador entre tasas y partidos */
+.sep-right { border-right: 2px solid rgba(255,255,255,.2) !important; }
+td.sep-right { border-right: 2px solid var(--border) !important; }
+
+/* Columnas de tasas (referencia) */
+.col-tasa { color: var(--text3); font-family: var(--mono); font-size: 11px; }
+thead th.col-tasa { color: rgba(255,255,255,.6); }
+
+/* Celdas de partido */
+.monto-titular   { color: #1a6bbf; font-weight: 600; font-family: var(--mono); }
+.monto-sup-min   { color: #b06000; font-weight: 600; font-family: var(--mono); }
+.monto-suplente  { color: #666; font-weight: 500; font-family: var(--mono); }
+.monto-vacio     { color: var(--border); font-size: 11px; }
+
+/* Columna total */
+.col-total {
+  font-weight: 700; font-family: var(--mono); color: var(--navy);
+  background: rgba(15,37,64,.04);
+  border-left: 2px solid var(--border) !important;
+  position: sticky; right: 0;
+  box-shadow: -2px 0 6px rgba(0,0,0,.06);
+}
+thead th.col-total {
+  background: rgba(255,255,255,.12) !important;
+  border-left-color: rgba(255,255,255,.2) !important;
+}
+
+/* Fila de totales (pie) */
+tfoot td {
+  font-weight: 700; font-family: var(--mono); font-size: 11px;
+  color: var(--navy); background: rgba(15,37,64,.06);
+  border-top: 2px solid var(--border);
+}
+tfoot td.col-nombre { color: var(--text3); font-size: 11px; }
+
+/* Header de partido (2 líneas) */
+.th-partido-fecha { font-size: 10px; font-weight: 500; opacity: .7; display: block; }
+.th-partido-rival { display: block; }
+
+/* Banda alterna */
+.liq-table tbody tr:nth-child(even) td:not(.col-nombre):not(.col-total) {
+  background: rgba(15,37,64,.02);
+}
+.liq-table tbody tr:nth-child(even) .col-nombre { background: #f9f9f9; }
+
+.loading-wrap { padding: 48px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-logo">
+      <div class="hdr-escudo" id="escudo-wrap"></div>
+      <div class="hdr-title">Partidos <span>CDM</span></div>
+    </div>
+    <span class="badge" id="badge">—</span>
+  </div>
+  <div class="hdr-sub">Liquidación por partido · Fútbol Mayor</div>
+
+  <!-- Filtro de meses -->
+  <div class="mes-scroll" id="mes-scroll"></div>
+
+  <!-- Filtro de partidos -->
+  <div class="partidos-filter" id="partidos-filter" style="display:none">
+    <div class="pf-header">
+      Partidos
+      <div class="pf-actions">
+        <button class="pf-action-btn" onclick="selTodosPartidos()">Todos</button>
+        <button class="pf-action-btn" onclick="selNingunoPartidos()">Ninguno</button>
+      </div>
+    </div>
+    <div class="pf-chips" id="pf-chips"></div>
+  </div>
+
+  <!-- Chips resumen -->
+  <div class="chips" id="chips" style="display:none">
+    <div class="chip"><strong id="c-partidos">0</strong>Partidos</div>
+    <div class="chip"><strong id="c-jugadores">0</strong>Jugadores</div>
+    <div class="chip"><strong id="c-goles">0</strong>Goles</div>
+    <div class="chip"><strong id="c-vallas">0</strong>Vallas inv.</div>
+  </div>
+
+  <!-- Tabla -->
+  <div id="liq-container">
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <p style="margin-top:12px;color:var(--text3);font-size:14px">Cargando datos…</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navegación entre módulos -->
+<div id="bottom-nav"></div>
+
+<script src="api.js"></script>
+<script>
+const MESES_NOM = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+/* ── Parseo de rol del formulario ──
+   Valores posibles: T | S | S/con minutos | T,A | S,A | S/con minutos,A  */
+function parsearRol(rolRaw) {
+  const partes = (rolRaw || '').split(',').map(s => s.trim());
+  const esArquero = partes.includes('A');
+  let tipo = '';
+  if (partes.includes('T'))                                     tipo = 'titular';
+  else if (partes.some(s => s.toLowerCase().includes('min')))   tipo = 'supMin';
+  else if (partes.includes('S'))                                tipo = 'suplente';
+  return { tipo, esArquero };
+}
+
+function labelRol(tipo, esArquero) {
+  const base = tipo === 'titular'  ? 'Titular'
+             : tipo === 'supMin'   ? 'Sup c/min'
+             : tipo === 'suplente' ? 'Suplente' : '';
+  return esArquero && base ? 'Arq. ' + base : base;
+}
+
+let jugadores        = [];
+let partidos         = [];
+let mesActual        = '';
+let selectedMatches  = null;   // null = todos; Set de matchKeys seleccionados
+let matchMap_global  = {};     // expuesto para acceso desde toggleMatch/renderFiltros
+
+/* ── Carga inicial ── */
+async function cargarDatos() {
+  const cont = document.getElementById('liq-container');
+  cont.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><p style="margin-top:12px;color:var(--text3);font-size:14px">Cargando datos…</p></div>';
+
+  try {
+    const [rJug, rPart] = await Promise.all([
+      apiPost('getJugadores', {}),
+      apiPost('getPartidos',  {})
+    ]);
+    jugadores = rJug.jugadores || [];
+    partidos  = rPart.partidos || [];
+
+    const meses = obtenerMeses();
+    mesActual = meses.length ? meses[meses.length - 1] : '';
+
+    renderMeses(meses);
+    renderLiquidacion();
+  } catch(e) {
+    cont.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">⚠️</div>
+        <p>${e.message === 'URL del script no configurada'
+          ? 'Configurá la URL del script en <a href="tesoreria.html">Tesorería → Config</a>'
+          : 'Error al cargar: ' + e.message}</p>
+      </div>`;
+  }
+}
+
+/* ── Meses disponibles ── */
+function obtenerMeses() {
+  const set = new Set();
+  partidos.forEach(p => { if (p.fecha && p.fecha.length >= 7) set.add(p.fecha.substring(0, 7)); });
+  return Array.from(set).sort();
+}
+
+function mesLabel(m) {
+  const [y, mo] = m.split('-');
+  return MESES_NOM[parseInt(mo) - 1] + ' ' + y;
+}
+
+function renderMeses(meses) {
+  const cont = document.getElementById('mes-scroll');
+  if (!meses.length) { cont.innerHTML = ''; return; }
+  cont.innerHTML = meses.map(m =>
+    `<button class="mes-btn${m === mesActual ? ' activo' : ''}" onclick="selMes('${m}')">${mesLabel(m)}</button>`
+  ).join('');
+}
+
+function selMes(m) {
+  mesActual = m;
+  selectedMatches = null;  // reset al cambiar mes
+  document.querySelectorAll('.mes-btn').forEach(b =>
+    b.classList.toggle('activo', b.textContent === mesLabel(m))
+  );
+  renderLiquidacion();
+}
+
+/* ── Filtro de partidos ── */
+function renderFiltrosPartidos(matchKeys) {
+  const cont = document.getElementById('partidos-filter');
+  const chips = document.getElementById('pf-chips');
+  if (!matchKeys.length) { cont.style.display = 'none'; return; }
+  cont.style.display = '';
+
+  chips.innerHTML = matchKeys.map(mk => {
+    const m = matchMap_global[mk];
+    const fParts = (m.fecha || '').split('-');
+    const fCorta = fParts.length === 3 ? fParts[2] + '/' + fParts[1] : m.fecha;
+    const activo = selectedMatches === null || selectedMatches.has(mk);
+    return `<button class="partido-chip${activo ? ' activo' : ''}" onclick="toggleMatch('${mk}')">
+      <span class="pc-fecha">${fCorta}</span>
+      ${esc(m.rival || '')}
+    </button>`;
+  }).join('');
+}
+
+function toggleMatch(mk) {
+  // Si era "todos", inicializar con todos seleccionados primero
+  if (selectedMatches === null) {
+    selectedMatches = new Set(Object.keys(matchMap_global));
+  }
+  if (selectedMatches.has(mk)) selectedMatches.delete(mk);
+  else                          selectedMatches.add(mk);
+  renderLiquidacion();
+}
+
+function selTodosPartidos()   { selectedMatches = null; renderLiquidacion(); }
+function selNingunoPartidos() { selectedMatches = new Set(); renderLiquidacion(); }
+
+/* ── Renderizado de liquidación ── */
+function renderLiquidacion() {
+  const cont = document.getElementById('liq-container');
+
+  // Jugadores activos ordenados por apellido
+  const jugs = jugadores
+    .filter(j => (j.activo || 'SI').toUpperCase() !== 'NO')
+    .sort((a, b) => (a.apellido || a.nombre).localeCompare(b.apellido || b.nombre));
+
+  // Partidos del mes seleccionado
+  const partMes = mesActual
+    ? partidos.filter(p => p.fecha && p.fecha.startsWith(mesActual))
+    : partidos;
+
+  // Partidos únicos ordenados por fecha (guardado global para el filtro)
+  const matchMap  = {};
+  const matchKeys = [];
+  partMes.forEach(p => {
+    const k = p.fecha + '|' + p.rival;
+    if (!matchMap[k]) { matchKeys.push(k); matchMap[k] = p; }
+    if (p.vallaInvicta && !matchMap[k].vallaInvicta) matchMap[k].vallaInvicta = p.vallaInvicta;
+  });
+  matchKeys.sort((a, b) => matchMap[a].fecha.localeCompare(matchMap[b].fecha));
+  matchMap_global = matchMap;  // exponer para el filtro
+
+  // ── Pago Mensual: primer partido del mes con día ≥ 15 ──
+  const mensualPayKey = matchKeys.find(mk => {
+    const day = parseInt((matchMap[mk].fecha || '').split('-')[2] || '0');
+    return day >= 15;
+  }) || null;
+
+  // ── Pago Quincenal: cada 2° partido en la secuencia global del jugador ──
+  // Necesita todos los partidos (no solo el mes), ordenados por fecha
+  const allMKs = [];
+  const allMM  = {};
+  partidos.forEach(p => {
+    const k = p.fecha + '|' + p.rival;
+    if (!allMM[k]) { allMKs.push(k); allMM[k] = p; }
+  });
+  allMKs.sort((a, b) => allMM[a].fecha.localeCompare(allMM[b].fecha));
+
+  const quincenalPayKeys = {}; // jugNombre → Set<matchKey> que cobran
+  jugs.forEach(jug => {
+    if ((jug.tipoCobro || '').toLowerCase() !== 'quincenal') return;
+    // Partidos en que participó este jugador (cualquier mes)
+    const partLookup = new Set(
+      partidos
+        .filter(p => {
+          const jk = jugMap[p.jugador] || jugMap[(p.jugador || '').trim()];
+          return jk && jk.nombre === jug.nombre && p.rol;
+        })
+        .map(p => p.fecha + '|' + p.rival)
+    );
+    let seq = 0;
+    const payKeys = new Set();
+    allMKs.forEach(mk => {
+      if (partLookup.has(mk)) {
+        seq++;
+        if (seq % 2 === 0) payKeys.add(mk); // 2°, 4°, 6°…
+      }
+    });
+    quincenalPayKeys[jug.nombre] = payKeys;
+  });
+
+  // Inicializar selección si es la primera vez o cambió de mes
+  if (selectedMatches === null) {
+    // null = todos seleccionados (no hace falta un Set)
+  }
+
+  // Renderizar chips del filtro
+  renderFiltrosPartidos(matchKeys);
+
+  // Partidos visibles según filtro
+  const visibleKeys = selectedMatches === null
+    ? matchKeys
+    : matchKeys.filter(mk => selectedMatches.has(mk));
+
+  if (matchKeys.length === 0) {
+    cont.innerHTML = `<div class="empty-state"><div class="es-icon">⚽</div><p>No hay partidos registrados${mesActual ? ' en ' + mesLabel(mesActual) : ''}.</p></div>`;
+    document.getElementById('badge').textContent = '0 partidos';
+    document.getElementById('chips').style.display = 'none';
+    return;
+  }
+
+  // Mapa de jugadores por nombre (JUGADOR_CT tiene prioridad)
+  const jugMap = {};
+  jugs.forEach(j => {
+    const k1 = (j.jugadorCt || j.nombre).trim();
+    jugMap[k1] = j;
+    const k2 = j.nombre.trim();
+    if (k2 && k2 !== k1) jugMap[k2] = j;
+  });
+
+  // playerData[jugNombre][matchKey] = { rol, goles, base, golesM, vallaM, total }
+  const playerData = {};
+  partMes.forEach(p => {
+    const jug = jugMap[p.jugador] || jugMap[(p.jugador || '').trim()];
+    if (!jug) return;
+    const mk = p.fecha + '|' + p.rival;
+    if (!playerData[jug.nombre]) playerData[jug.nombre] = {};
+
+    const { tipo, esArquero } = parsearRol(p.rol);
+    let base = 0;
+    if      (tipo === 'titular')  base = jug.montoPorPartidoTitular       || 0;
+    else if (tipo === 'supMin')   base = jug.montoPorPartidoSuplenteConMin || 0;
+    else if (tipo === 'suplente') base = jug.montoPorPartidoSuplente      || 0;
+
+    // Aplicar restricción según TipoCobro
+    const tc = (jug.tipoCobro || '').toLowerCase();
+    if (tc === 'mensual') {
+      if (mk !== mensualPayKey) base = 0;
+    } else if (tc === 'quincenal') {
+      if (!(quincenalPayKeys[jug.nombre] || new Set()).has(mk)) base = 0;
+    }
+    // 'por partido', 'por fecha', '' → siempre paga
+
+    const golesM = (p.goles || 0) * (jug.premioPorGol || 0);
+    const esValla = (p.vallaInvicta || '').toUpperCase() === 'SI' || p.vallaInvicta === 'Sí';
+    // Valla aplica a cualquier jugador que participó (titular, sup c/min o suplente)
+    const vallaM  = (tipo && esValla) ? (jug.premioVallaInvicta || 0) : 0;
+
+    playerData[jug.nombre][mk] = {
+      rol: p.rol, tipo, esArquero, goles: p.goles || 0, base, golesM, vallaM,
+      total: base + golesM + vallaM
+    };
+  });
+
+  // Totales por partido (columna footer) — solo partidos visibles
+  const totPorPartido = {};
+  visibleKeys.forEach(mk => totPorPartido[mk] = 0);
+  let totalGeneral = 0;
+
+  // ── Cabecera ──
+  const thPartidos = visibleKeys.map(mk => {
+    const m = matchMap[mk];
+    const fParts = (m.fecha || '').split('-');
+    const fCorta = fParts.length === 3 ? fParts[2] + '/' + fParts[1] : m.fecha;
+    const rival  = esc(m.rival || '');
+    const res    = m.resultado ? ` <span style="opacity:.6;font-size:10px">${esc(m.resultado)}</span>` : '';
+    return `<th><span class="th-partido-fecha">${fCorta}</span><span class="th-partido-rival">${rival}${res}</span></th>`;
+  }).join('');
+
+  // ── Filas ──
+  let totalGolesAll = 0, vallaCountSet = new Set();
+  const filas = jugs.map(jug => {
+    let totalJug = 0;
+    const celdas = visibleKeys.map(mk => {
+      const d = (playerData[jug.nombre] || {})[mk];
+      if (!d || !d.tipo) {
+        return `<td class="monto-vacio">—</td>`;
+      }
+      totPorPartido[mk] += d.total;
+      totalJug += d.total;
+      totalGeneral += d.total;
+      totalGolesAll += d.goles;
+
+      // Clase y etiqueta según rol
+      const cls = d.tipo === 'titular'  ? 'monto-titular'
+                : d.tipo === 'supMin'   ? 'monto-sup-min'
+                : 'monto-suplente';
+      const etiqueta = labelRol(d.tipo, d.esArquero);
+
+      // Tooltip con detalle
+      const partes = [etiqueta];
+      if (d.base)   partes.push(fmt(d.base));
+      if (d.golesM) partes.push('Gol×' + d.goles + ': ' + fmt(d.golesM));
+      if (d.vallaM) partes.push('Valla: ' + fmt(d.vallaM));
+      const title = partes.join(' · ');
+
+      // Si monto = $0 (sin tarifas configuradas), mostrar el rol abreviado
+      const display = d.total > 0 ? fmt(d.total) : etiqueta;
+      return `<td class="${cls}" title="${title}">${display}</td>`;
+    }).join('');
+
+    // Tasas
+    const t = fmt(jug.montoPorPartidoTitular   || 0);
+    const s = fmt(jug.montoPorPartidoSuplenteConMin || 0);
+    const p = fmt(jug.montoPorPartidoSuplente   || 0);
+    const v = jug.premioVallaInvicta ? fmt(jug.premioVallaInvicta) : '—';
+    const g = jug.premioPorGol       ? fmt(jug.premioPorGol)       : '—';
+
+    const displayNombre = jug.apellido
+      ? (jug.apellido.toUpperCase() + ' ' + (jug.nombreDisplay || ''))
+      : jug.nombre;
+
+    return `<tr>
+      <td class="col-nombre">${esc(displayNombre)}</td>
+      <td class="col-tasa">${t}</td>
+      <td class="col-tasa">${s}</td>
+      <td class="col-tasa">${p}</td>
+      <td class="col-tasa">${v}</td>
+      <td class="col-tasa sep-right">${g}</td>
+      ${celdas}
+      <td class="col-total">${totalJug ? fmt(totalJug) : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Fila de totales por partido ──
+  const tdTotals = visibleKeys.map(mk =>
+    `<td>${totPorPartido[mk] ? fmt(totPorPartido[mk]) : '—'}</td>`
+  ).join('');
+
+  // Contar vallas invictas (en partidos visibles)
+  visibleKeys.forEach(mk => {
+    const v = (matchMap[mk].vallaInvicta || '').toUpperCase();
+    if (v === 'SI' || v === 'SÍ') vallaCountSet.add(mk);
+  });
+
+  // Tabla completa
+  cont.innerHTML = `
+    <div class="liq-wrap">
+      <table class="liq-table">
+        <thead>
+          <tr>
+            <th class="col-nombre">Jugador / CT</th>
+            <th class="col-tasa">Titular</th>
+            <th class="col-tasa">Sup c/min</th>
+            <th class="col-tasa">Suplente</th>
+            <th class="col-tasa">Valla</th>
+            <th class="col-tasa sep-right">x Gol</th>
+            ${thPartidos}
+            <th class="col-total">Total</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+        <tfoot>
+          <tr>
+            <td class="col-nombre">Total</td>
+            <td></td><td></td><td></td><td></td><td class="sep-right"></td>
+            ${tdTotals}
+            <td class="col-total">${fmt(totalGeneral)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
+
+  // Chips
+  document.getElementById('badge').textContent = visibleKeys.length + ' de ' + matchKeys.length + ' partidos';
+  document.getElementById('c-partidos').textContent  = visibleKeys.length;
+  document.getElementById('c-jugadores').textContent = jugs.length;
+  document.getElementById('c-goles').textContent     = totalGolesAll;
+  document.getElementById('c-vallas').textContent    = vallaCountSet.size;
+  document.getElementById('chips').style.display     = '';
+}
+
+function fmt(n) {
+  if (!n && n !== 0) return '—';
+  if (n === 0) return '—';
+  return '$' + Math.round(n).toLocaleString('es-AR');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+window.addEventListener('DOMContentLoaded', cargarDatos);
+</script>
+<script src="nav.js"></script>
+</body>
+</html>

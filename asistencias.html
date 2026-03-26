@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0f2540">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Asistencias · CDM</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style-shared.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+#app { max-width: 100%; margin: 0 auto; padding-bottom: 88px; min-height: 100vh; }
+
+/* ── Controles ── */
+.controles {
+  padding: 10px 14px 8px;
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.controles select.inp { flex: 1; min-width: 130px; max-width: 200px; font-size: 14px; padding: 9px 32px 9px 12px; }
+
+.semanas-row {
+  display: flex; gap: 6px; padding: 0 14px 10px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.semanas-row::-webkit-scrollbar { display: none; }
+.sem-btn {
+  flex-shrink: 0; padding: 7px 14px;
+  border: 1px solid var(--border); border-radius: 20px;
+  background: none; cursor: pointer;
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+  color: var(--text3); transition: all .12s; white-space: nowrap;
+}
+.sem-btn.active { border-color: var(--navy); background: var(--navy); color: #fff; }
+
+/* ── Tabla calendario ── */
+.cal-outer {
+  overflow-x: auto;
+  padding: 0 14px 12px;
+  -webkit-overflow-scrolling: touch;
+}
+table.cal {
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 100%;
+}
+table.cal th, table.cal td {
+  border: 1px solid var(--border);
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Columna de jugador */
+table.cal th.col-jug, table.cal td.col-jug {
+  text-align: left;
+  padding: 8px 12px;
+  white-space: nowrap;
+  position: sticky; left: 0; z-index: 2;
+  background: #fff;
+  min-width: 130px; max-width: 170px;
+}
+table.cal thead th.col-jug {
+  background: var(--navy); color: #fff;
+  z-index: 3;
+}
+
+/* Encabezados de días */
+table.cal thead th.col-dia {
+  background: var(--navy); color: #fff;
+  padding: 6px 10px; min-width: 48px;
+}
+.th-dia-nombre { font-size: 11px; font-weight: 700; letter-spacing: .05em; }
+.th-dia-num    { font-size: 15px; font-weight: 600; margin-top: 2px; }
+.th-dia-num.fuera-mes { color: rgba(255,255,255,.35); }
+
+/* Celdas de asistencia */
+table.cal td.col-dia {
+  padding: 7px 8px;
+  font-family: var(--mono); font-size: 14px; font-weight: 600;
+}
+td.asistio    { color: #1a7a4a; background: rgba(26,122,74,.07); }
+td.no-asistio { color: #c8d4df; }
+td.sin-practica { color: #e0e0e0; background: #fafafa; }
+
+/* Fila de totales */
+tr.fila-total td { background: var(--navy3); font-weight: 700; font-size: 12px; }
+tr.fila-total td.col-jug { color: var(--text3); text-transform: uppercase; letter-spacing: .05em; }
+tr.fila-total td.col-dia { color: var(--navy); }
+
+/* Fila total por jugador */
+table.cal td.col-total {
+  font-weight: 700; font-size: 13px;
+  color: var(--navy); background: var(--navy3);
+  padding: 7px 10px;
+  position: sticky; right: 0;
+  border-left: 2px solid var(--border2);
+}
+table.cal thead th.col-total {
+  background: var(--navy); color: rgba(255,255,255,.8);
+  font-size: 11px; padding: 6px 10px;
+  position: sticky; right: 0;
+  border-left: 2px solid rgba(255,255,255,.2);
+}
+
+/* Filas alternadas */
+tbody tr:nth-child(even) td:not(.col-jug):not(.col-total) { background: #fafbfc; }
+tbody tr:nth-child(even) td.asistio { background: rgba(26,122,74,.1); }
+tbody tr:hover td.col-jug { background: var(--navy3); }
+
+/* Resumen debajo de la tabla */
+.resumen-chips {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  padding: 8px 14px 4px;
+}
+.chip {
+  font-size: 12px; padding: 4px 12px; border-radius: 20px;
+  background: var(--navy3); color: var(--text2); border: 1px solid var(--border);
+}
+.chip strong { color: var(--navy); }
+
+.loading-wrap { padding: 48px; text-align: center; }
+
+/* ── Toggle de vista ── */
+.vista-toggle {
+  display: flex; gap: 0; padding: 8px 14px;
+  border-bottom: 1px solid var(--border); background: #fff;
+}
+.vista-btn {
+  flex: 1; padding: 8px 0; font-size: 13px; font-weight: 600;
+  border: 1.5px solid var(--border); background: none; color: var(--text3);
+  cursor: pointer; transition: all .12s;
+}
+.vista-btn:first-child { border-radius: 8px 0 0 8px; }
+.vista-btn:last-child  { border-radius: 0 8px 8px 0; border-left: none; }
+.vista-btn.activa { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+/* ── Vista semanal ── */
+.semana-nav-row {
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px 6px;
+}
+.semana-nav-row button {
+  background: var(--navy3); border: 1px solid var(--border); border-radius: 8px;
+  padding: 7px 12px; font-size: 16px; color: var(--text3); cursor: pointer;
+}
+.semana-nav-row .semana-lbl-v {
+  flex: 1; text-align: center; font-size: 14px; font-weight: 600; color: var(--navy);
+}
+
+/* Badges en vista semanal */
+.badge-p  { background: rgba(26,158,92,.12); color: #1a7a4a; border-radius: 6px; padding: 2px 6px; font-weight: 700; font-size: 12px; }
+.badge-f  { background: rgba(26,107,191,.12);color: var(--blue); border-radius: 6px; padding: 2px 6px; font-weight: 700; font-size: 12px; }
+.badge-av { background: rgba(176,96,0,.1);   color: var(--amber); border-radius: 6px; padding: 2px 6px; font-weight: 700; font-size: 12px; }
+.badge-au { color: var(--border); font-size: 14px; }
+.badge-x  { color: var(--red); opacity: .5; font-size: 12px; font-weight: 700; }
+
+.sem-table-wrap { overflow-x: auto; padding: 0 14px 12px; -webkit-overflow-scrolling: touch; }
+.sem-table { border-collapse: collapse; font-size: 12px; min-width: 100%; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.sem-table th { background: var(--navy); color: rgba(255,255,255,.9); padding: 8px 6px; text-align: center; font-size: 11px; white-space: nowrap; font-weight: 600; }
+.sem-table th.col-nombre { text-align: left; padding-left: 12px; position: sticky; left: 0; background: var(--navy); z-index: 2; }
+.sem-table td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--border); }
+.sem-table td.col-nombre { text-align: left; padding-left: 12px; font-weight: 600; font-size: 12px; color: var(--navy); position: sticky; left: 0; background: #fff; z-index: 1; white-space: nowrap; }
+.sem-table tr:last-child td { border-bottom: none; }
+.sem-table tfoot td { background: rgba(15,37,64,.05); font-weight: 700; font-size: 11px; color: var(--navy); border-top: 2px solid var(--border); font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-logo">
+      <div class="hdr-escudo"></div>
+      <div class="hdr-title">Asistencias <span>CDM</span></div>
+    </div>
+    <span class="badge" id="badge">—</span>
+  </div>
+  <div class="hdr-sub">Prácticas · Fútbol Mayor</div>
+
+  <!-- Toggle vista -->
+  <div class="vista-toggle">
+    <button class="vista-btn activa" id="vbtn-semana" onclick="cambiarVista('semana')">📅 Semana</button>
+    <button class="vista-btn"        id="vbtn-mes"    onclick="cambiarVista('mes')">📆 Mes completo</button>
+  </div>
+
+  <!-- VISTA SEMANAL -->
+  <div id="vista-semana">
+    <div class="semana-nav-row">
+      <button onclick="navSemana(-1)">‹</button>
+      <span class="semana-lbl-v" id="semana-lbl-v">—</span>
+      <button onclick="navSemana(1)">›</button>
+    </div>
+    <div id="semana-cont">
+      <div class="loading-wrap"><div class="spinner"></div><p style="margin-top:12px;color:var(--text3);font-size:14px">Cargando…</p></div>
+    </div>
+  </div>
+
+  <!-- VISTA MENSUAL -->
+  <div id="vista-mes" style="display:none">
+    <!-- Controles: mes + botón actualizar -->
+    <div class="controles">
+      <select id="sel-mes" class="inp" onchange="cambiarMes()">
+        <option value="">Cargando…</option>
+      </select>
+      <button class="btn-primary" style="padding:9px 16px;width:auto;font-size:13px" onclick="cargarDatos()">↺</button>
+    </div>
+
+    <!-- Filtro por semana -->
+    <div class="semanas-row" id="semanas-row">
+      <button class="sem-btn active" data-sem="0" onclick="cambiarSemana(0)">Mes completo</button>
+      <button class="sem-btn" data-sem="1" onclick="cambiarSemana(1)">Sem 1 (1–7)</button>
+      <button class="sem-btn" data-sem="2" onclick="cambiarSemana(2)">Sem 2 (8–14)</button>
+      <button class="sem-btn" data-sem="3" onclick="cambiarSemana(3)">Sem 3 (15–21)</button>
+      <button class="sem-btn" data-sem="4" onclick="cambiarSemana(4)">Sem 4 (22–fin)</button>
+    </div>
+
+    <!-- Tabla o estado -->
+    <div id="cal-container">
+      <div class="loading-wrap">
+        <div class="spinner"></div>
+        <p style="margin-top:12px;color:var(--text3);font-size:14px">Cargando asistencias…</p>
+      </div>
+    </div>
+
+    <!-- Resumen -->
+    <div id="resumen-chips" class="resumen-chips"></div>
+  </div>
+
+</div>
+
+<div id="bottom-nav"></div>
+<script src="api.js"></script>
+<script>
+/* ─── Constantes ─── */
+// Lunes = 0 … Domingo = 6 (semana argentina empieza el lunes)
+const DIA_LETRA  = ['L','M','X','J','V','S','D'];
+const DIA_NOMBRE = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const MESES_ES   = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// Rango de días por semana
+const SEMANAS = {
+  1: { ini: 1,  fin: 7  },
+  2: { ini: 8,  fin: 14 },
+  3: { ini: 15, fin: 21 },
+  4: { ini: 22, fin: 31 },
+};
+
+/* ─── Estado ─── */
+let todas          = [];   // todos los registros cargados
+let mesActual      = '';   // 'YYYY-MM'
+let semActual      = 0;    // 0=mes completo, 1-4
+let vistaActual    = 'semana';
+let semanaOffset   = 0;    // para vista semanal
+
+/* ─── Toggle de vista ─── */
+function cambiarVista(v) {
+  vistaActual = v;
+  document.getElementById('vista-semana').style.display = v === 'semana' ? '' : 'none';
+  document.getElementById('vista-mes').style.display    = v === 'mes'    ? '' : 'none';
+  document.getElementById('vbtn-semana').className = 'vista-btn' + (v === 'semana' ? ' activa' : '');
+  document.getElementById('vbtn-mes').className    = 'vista-btn' + (v === 'mes'    ? ' activa' : '');
+  if (v === 'semana') renderSemana();
+  if (v === 'mes' && mesActual) renderCalendario();
+}
+
+/* ─── Carga ─── */
+async function cargarDatos() {
+  if (vistaActual === 'semana') {
+    renderSemana();
+    return;
+  }
+  const cont = document.getElementById('cal-container');
+  cont.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><p style="margin-top:12px;color:var(--text3);font-size:14px">Cargando…</p></div>';
+  document.getElementById('resumen-chips').innerHTML = '';
+
+  try {
+    const r = await apiPost('getAsistencias', {});
+    todas = r.asistencias || [];
+
+    // Construir selector de meses desde los datos
+    const meses = [...new Set(todas.map(a => a.fecha.slice(0, 7)))].sort().reverse();
+    const selMes = document.getElementById('sel-mes');
+    selMes.innerHTML = meses.length
+      ? meses.map(m => {
+          const [y, mo] = m.split('-');
+          return `<option value="${m}">${MESES_ES[+mo - 1]} ${y}</option>`;
+        }).join('')
+      : '<option value="">Sin datos</option>';
+
+    if (!mesActual || !meses.includes(mesActual)) {
+      mesActual = meses[0] || '';
+    }
+    selMes.value = mesActual;
+
+    renderCalendario();
+  } catch (e) {
+    cont.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">⚠️</div>
+        <p>${e.message === 'URL del script no configurada'
+          ? 'Configurá la URL del script en <a href="tesoreria.html">Tesorería → Config</a>'
+          : 'Error: ' + e.message}</p>
+      </div>`;
+  }
+}
+
+/* ─── Cambios de filtro ─── */
+function cambiarMes() {
+  mesActual = document.getElementById('sel-mes').value;
+  renderCalendario();
+}
+function cambiarSemana(n) {
+  semActual = n;
+  document.querySelectorAll('.sem-btn').forEach(b => {
+    b.classList.toggle('active', +b.dataset.sem === n);
+  });
+  renderCalendario();
+}
+
+/* ─── Render principal ─── */
+function renderCalendario() {
+  const cont = document.getElementById('cal-container');
+  if (!mesActual) {
+    cont.innerHTML = '<div class="empty-state"><div class="es-icon">📅</div><p>Sin datos de asistencias.</p></div>';
+    return;
+  }
+
+  // Filtrar por mes
+  const delMes = todas.filter(a => a.fecha.startsWith(mesActual));
+
+  // Determinar columnas (días a mostrar)
+  const columnas = obtenerColumnas(mesActual, semActual);
+
+  // Fechas con al menos 1 asistencia
+  const fechasConPractica = new Set(delMes.map(a => a.fecha));
+
+  // Jugadores únicos presentes en el período filtrado
+  const datosFiltrados = semActual === 0
+    ? delMes
+    : delMes.filter(a => {
+        const dia = +a.fecha.split('-')[2];
+        const r   = SEMANAS[semActual];
+        return dia >= r.ini && dia <= r.fin;
+      });
+
+  const jugadores = [...new Set(datosFiltrados.map(a => a.jugador))].sort();
+
+  if (jugadores.length === 0) {
+    cont.innerHTML = '<div class="empty-state"><div class="es-icon">👥</div><p>Sin asistencias en este período.</p></div>';
+    document.getElementById('resumen-chips').innerHTML = '';
+    document.getElementById('badge').textContent = '0 jugadores';
+    return;
+  }
+
+  // ── Construir tabla ──
+  const thDias = columnas.map(col => {
+    const esPractica = fechasConPractica.has(col.fecha);
+    const numClass   = col.enMes ? '' : ' fuera-mes';
+    const marcador   = esPractica ? '' : ' style="opacity:.4"';
+    return `<th class="col-dia"${marcador}>
+      <div class="th-dia-nombre">${col.letra}</div>
+      <div class="th-dia-num${numClass}">${col.dia}</div>
+    </th>`;
+  }).join('');
+
+  // Mapa rápido: "fecha|jugador" → estado
+  const estadoMap = {};
+  datosFiltrados.forEach(a => { estadoMap[a.fecha + '|' + a.jugador] = a.estado || a.tipo; });
+
+  const filas = jugadores.map(jug => {
+    let totalJug = 0;
+    const celdas = columnas.map(col => {
+      if (!col.enMes) return '<td class="col-dia sin-practica">·</td>';
+      const practica = fechasConPractica.has(col.fecha);
+      if (!practica) return '<td class="col-dia sin-practica">—</td>';
+      const est = estadoMap[col.fecha + '|' + jug];
+      if (est === 'Presente' || est === 'Local')           { totalJug++; return '<td class="col-dia asistio"><span class="badge-p">P</span></td>'; }
+      if (est === 'Entrenó Afuera' || est === 'Afuera')    { totalJug++; return '<td class="col-dia asistio"><span class="badge-f">F</span></td>'; }
+      if (est === 'Ausente c/Aviso'|| est === 'AusenteAviso') { return '<td class="col-dia"><span class="badge-av">A</span></td>'; }
+      if (est === 'Ausente')                               { return '<td class="col-dia no-asistio"><span class="badge-x">X</span></td>'; }
+      return '<td class="col-dia no-asistio">–</td>';
+    }).join('');
+    return `<tr>
+      <td class="col-jug">${esc(jug)}</td>
+      ${celdas}
+      <td class="col-total">${totalJug}</td>
+    </tr>`;
+  }).join('');
+
+  // Fila de totales por día (solo presentes + fuera)
+  const totalsDia = columnas.map(col => {
+    if (!col.enMes || !fechasConPractica.has(col.fecha)) return '<td class="col-dia"></td>';
+    const count = datosFiltrados.filter(a => {
+      if (a.fecha !== col.fecha) return false;
+      const est = a.estado || a.tipo;
+      return est === 'Presente' || est === 'Local' || est === 'Entrenó Afuera' || est === 'Afuera';
+    }).length;
+    return `<td class="col-dia">${count || '—'}</td>`;
+  }).join('');
+
+  const totalGeneral = datosFiltrados.filter(a => {
+    const est = a.estado || a.tipo;
+    return est === 'Presente' || est === 'Local' || est === 'Entrenó Afuera' || est === 'Afuera';
+  }).length;
+
+  cont.innerHTML = `
+    <div class="cal-outer">
+      <table class="cal">
+        <thead>
+          <tr>
+            <th class="col-jug">Jugador</th>
+            ${thDias}
+            <th class="col-total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filas}
+          <tr class="fila-total">
+            <td class="col-jug">Total del día</td>
+            ${totalsDia}
+            <td class="col-total">${totalGeneral}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+
+  // Resumen chips
+  const practicasDias = columnas.filter(c => c.enMes && fechasConPractica.has(c.fecha)).length;
+  const promedio = jugadores.length > 0
+    ? (totalGeneral / Math.max(practicasDias, 1)).toFixed(1)
+    : 0;
+  document.getElementById('resumen-chips').innerHTML = `
+    <div class="chip"><strong>${jugadores.length}</strong> jugadores</div>
+    <div class="chip"><strong>${practicasDias}</strong> prácticas</div>
+    <div class="chip"><strong>${totalGeneral}</strong> asistencias</div>
+    <div class="chip">Promedio <strong>${promedio}</strong> / práctica</div>`;
+
+  document.getElementById('badge').textContent = jugadores.length + ' jugadores';
+}
+
+/* ─── Vista semanal ─── */
+function navSemana(d) { semanaOffset += d; renderSemana(); }
+
+async function renderSemana() {
+  const hoyDate = new Date();
+  hoyDate.setDate(hoyDate.getDate() + semanaOffset * 7);
+  const dow    = (hoyDate.getDay() + 6) % 7;
+  const lunes  = new Date(hoyDate); lunes.setDate(hoyDate.getDate() - dow);
+  const domingo = new Date(lunes);  domingo.setDate(lunes.getDate() + 6);
+  const toISO  = d => d.toISOString().split('T')[0];
+  const dias   = Array.from({length: 7}, (_, i) => {
+    const d = new Date(lunes); d.setDate(lunes.getDate() + i);
+    return { fecha: toISO(d), d };
+  });
+  const DIAS_NOM = ['L','M','X','J','V','S','D'];
+  const lbl = `${lunes.getDate()}/${lunes.getMonth()+1} — ${domingo.getDate()}/${domingo.getMonth()+1}/${domingo.getFullYear()}`;
+  document.getElementById('semana-lbl-v').textContent = lbl;
+
+  const cont = document.getElementById('semana-cont');
+  cont.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><p style="margin-top:12px;color:var(--text3);font-size:14px">Cargando…</p></div>';
+
+  try {
+    const r = await apiPost('getAsistencias', { filtros: { fechaDesde: toISO(lunes), fechaHasta: toISO(domingo) } });
+    const data = {};
+    (r.asistencias || []).forEach(a => {
+      if (!data[a.jugador]) data[a.jugador] = {};
+      data[a.jugador][a.fecha] = a.estado || a.tipo;
+    });
+
+    const jugList = [...new Set(Object.keys(data))].sort((a, b) => a.localeCompare(b, 'es'));
+    if (jugList.length === 0) {
+      cont.innerHTML = '<div class="empty-state"><div class="es-icon">📅</div><p>Sin asistencias en esta semana.</p></div>';
+      return;
+    }
+
+    const thDias = dias.map((d, i) => {
+      const esHoy = toISO(new Date()) === d.fecha;
+      return `<th${esHoy?' style="color:var(--gold)"':''}>${DIAS_NOM[i]}<br><small>${d.d.getDate()}/${d.d.getMonth()+1}</small></th>`;
+    }).join('');
+
+    const totales = Array(7).fill(0);
+    const filas = jugList.map(nombre => {
+      const celdas = dias.map((d, i) => {
+        const est = (data[nombre] || {})[d.fecha];
+        if (est === 'Presente'        || est === 'Local')        { totales[i]++; return `<td><span class="badge-p">P</span></td>`; }
+        if (est === 'Entrenó Afuera'  || est === 'Afuera')       { totales[i]++; return `<td><span class="badge-f">F</span></td>`; }
+        if (est === 'Ausente c/Aviso' || est === 'AusenteAviso') { return `<td><span class="badge-av">A</span></td>`; }
+        if (est === 'Ausente')                                   { return `<td><span class="badge-x">X</span></td>`; }
+        return `<td><span class="badge-au">—</span></td>`;
+      }).join('');
+      return `<tr><td class="col-nombre">${esc(nombre)}</td>${celdas}</tr>`;
+    }).join('');
+
+    const tfootCeldas = totales.map(n => `<td>${n||'—'}</td>`).join('');
+
+    cont.innerHTML = `
+      <div class="sem-table-wrap">
+        <table class="sem-table">
+          <thead><tr><th class="col-nombre">Jugador</th>${thDias}</tr></thead>
+          <tbody>${filas}</tbody>
+          <tfoot><tr><td class="col-nombre">Presentes</td>${tfootCeldas}</tr></tfoot>
+        </table>
+      </div>`;
+  } catch(e) {
+    cont.innerHTML = `<div class="empty-state"><div class="es-icon">⚠️</div><p>Error: ${e.message}</p></div>`;
+  }
+}
+
+/* ─── Calcular columnas (Mon–Dom) para el período ─── */
+function obtenerColumnas(mesStr, sem) {
+  const [y, m] = mesStr.split('-').map(Number);
+  const ultimoDia = new Date(y, m, 0).getDate();
+
+  if (sem === 0) {
+    // Mes completo: grilla expandida L→D con relleno de semanas completas
+    const cols = [];
+    const primerDia   = new Date(y, m - 1, 1);
+    const offsetLunes = (primerDia.getDay() + 6) % 7; // días antes del lunes inicial
+    const startDate   = new Date(y, m - 1, 1 - offsetLunes);
+    const semanas     = Math.ceil((ultimoDia + offsetLunes) / 7);
+    for (let i = 0; i < semanas * 7; i++) {
+      const d     = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i);
+      const enMes = d.getMonth() === m - 1;
+      const fecha = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+      cols.push({ letra: DIA_LETRA[i % 7], dia: d.getDate(), fecha, enMes });
+    }
+    return cols;
+  }
+
+  // Vista semanal: mostrar los días del rango en orden cronológico,
+  // cada uno etiquetado con su día de semana real (L/M/X/J/V/S/D)
+  const diaIni = SEMANAS[sem].ini;
+  const diaFin = Math.min(SEMANAS[sem].fin, ultimoDia);
+  const cols = [];
+  for (let dia = diaIni; dia <= diaFin; dia++) {
+    const d   = new Date(y, m - 1, dia);
+    const dow = (d.getDay() + 6) % 7;  // 0=Lun … 6=Dom
+    const fecha = `${y}-${pad(m)}-${pad(dia)}`;
+    cols.push({ letra: DIA_LETRA[dow], dia, fecha, enMes: true });
+  }
+  return cols;
+}
+
+/* ─── Utils ─── */
+function pad(n) { return String(n).padStart(2, '0'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+window.addEventListener('DOMContentLoaded', () => {
+  cambiarVista('semana');
+});
+</script>
+<script src="nav.js"></script>
+</body>
+</html>

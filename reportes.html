@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0f2540">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Reportes · CDM</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style-shared.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+#app { max-width: 960px; margin: 0 auto; padding-bottom: 88px; min-height: 100vh; }
+
+.reportes-tabs { padding: 8px 18px 12px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.reportes-tabs::-webkit-scrollbar { display: none; }
+
+.iframe-wrap {
+  padding: 0 18px;
+  height: calc(100vh - 180px);
+  min-height: 400px;
+}
+.iframe-wrap iframe {
+  width: 100%; height: 100%;
+  border: none; border-radius: var(--r);
+  background: #fff;
+}
+
+/* Placeholder cuando no hay URL configurada */
+.placeholder-card {
+  margin: 12px 18px;
+  background: #fff; border: 1px solid var(--border); border-radius: var(--r);
+  padding: 32px 24px; text-align: center;
+}
+.placeholder-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--navy); }
+.placeholder-card p { font-size: 14px; color: var(--text2); line-height: 1.6; }
+.placeholder-card ol { text-align: left; margin: 16px 0; padding-left: 24px; }
+.placeholder-card ol li { font-size: 14px; color: var(--text2); margin-bottom: 6px; }
+.placeholder-card code {
+  background: var(--navy3); border-radius: 4px;
+  padding: 2px 6px; font-family: var(--mono); font-size: 12px;
+}
+.config-url-row { display: flex; gap: 8px; margin-top: 16px; }
+.config-url-row input { flex: 1; }
+.btn-guardar {
+  padding: 11px 18px; background: var(--navy); color: #fff;
+  border: none; border-radius: var(--rs); cursor: pointer;
+  font-family: var(--font); font-weight: 600; white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-logo">
+      <div class="hdr-escudo"></div>
+      <div class="hdr-title">Reportes <span>CDM</span></div>
+    </div>
+  </div>
+  <div class="hdr-sub">Looker Studio · Fútbol Mayor</div>
+
+  <!-- Tabs de reportes -->
+  <div class="reportes-tabs" id="tabs-container"></div>
+
+  <!-- Contenido: iframe o placeholder -->
+  <div id="main-content"></div>
+</div>
+
+<!-- Navegación entre módulos -->
+<div id="bottom-nav"></div>
+
+<script src="api.js"></script>
+<script>
+/* ─────────────────────────────────────────────────────────
+   CONFIGURACIÓN — Pegá aquí las URLs de Looker Studio
+   Una vez que publiques el reporte, copiá el link de cada
+   página y reemplazá el valor de "url" correspondiente.
+───────────────────────────────────────────────────────── */
+const REPORTES = [
+  {
+    id:    'tesoreria',
+    label: '💰 Tesorería',
+    url:   '',  // ← Pegá la URL del reporte de Tesorería
+    desc:  'Ingresos, egresos y saldo por mes',
+  },
+  {
+    id:    'comprobantes',
+    label: '📄 Comprobantes',
+    url:   '',  // ← Pegá la URL del reporte de Comprobantes
+    desc:  'Historial de comprobantes emitidos',
+  },
+  {
+    id:    'asistencias',
+    label: '👥 Asistencias',
+    url:   '',  // ← Pegá la URL del reporte de Asistencias
+    desc:  'Asistencias y viáticos por jugador',
+  },
+  {
+    id:    'partidos',
+    label: '⚽ Partidos',
+    url:   '',  // ← Pegá la URL del reporte de Partidos
+    desc:  'Goles, roles y estadísticas por jugador',
+  },
+];
+
+const LOOKER_URL_KEY = 'cdm-looker-urls';
+
+function getLookerUrls() {
+  try {
+    return JSON.parse(localStorage.getItem(LOOKER_URL_KEY) || '{}');
+  } catch { return {}; }
+}
+
+function saveLookerUrl(id, url) {
+  const urls = getLookerUrls();
+  urls[id] = url.trim();
+  localStorage.setItem(LOOKER_URL_KEY, JSON.stringify(urls));
+}
+
+let tabActivo = REPORTES[0].id;
+
+function renderTabs() {
+  const cont = document.getElementById('tabs-container');
+  cont.innerHTML = REPORTES.map(r => `
+    <button class="tab-pill ${r.id === tabActivo ? 'active' : ''}"
+            onclick="cambiarTab('${r.id}')">${r.label}</button>
+  `).join('');
+}
+
+function cambiarTab(id) {
+  tabActivo = id;
+  renderTabs();
+  renderContenido();
+}
+
+function renderContenido() {
+  const r    = REPORTES.find(r => r.id === tabActivo);
+  const urls = getLookerUrls();
+  const url  = urls[r.id] || r.url;
+  const cont = document.getElementById('main-content');
+
+  if (url) {
+    cont.innerHTML = `
+      <div class="iframe-wrap">
+        <iframe src="${url}" allowfullscreen
+          sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+        </iframe>
+      </div>
+      <div style="padding:8px 18px; text-align:right">
+        <a href="${url}" target="_blank" style="font-size:12px; color:var(--text3)">
+          Abrir en nueva pestaña ↗
+        </a>
+        &nbsp;·&nbsp;
+        <a href="#" onclick="limpiarUrl('${r.id}'); return false" style="font-size:12px; color:var(--text3)">
+          Cambiar URL
+        </a>
+      </div>`;
+  } else {
+    cont.innerHTML = `
+      <div class="placeholder-card">
+        <h3>Configurar reporte: ${r.label}</h3>
+        <p>${r.desc}</p>
+        <ol>
+          <li>Abrí <strong>lookerstudio.google.com</strong></li>
+          <li>Creá un nuevo reporte y conectalo a tu planilla <code>CDM Gestión Fútbol Mayor</code></li>
+          <li>Publicá el reporte: <em>Archivo → Publicar en la web → Enlace</em></li>
+          <li>Pegá la URL aquí:</li>
+        </ol>
+        <div class="config-url-row">
+          <input type="url" id="input-url-${r.id}" class="inp"
+            placeholder="https://lookerstudio.google.com/embed/..." />
+          <button class="btn-guardar" onclick="guardarUrl('${r.id}')">Guardar</button>
+        </div>
+      </div>`;
+  }
+}
+
+function guardarUrl(id) {
+  const url = document.getElementById('input-url-' + id)?.value.trim();
+  if (!url) return;
+  saveLookerUrl(id, url);
+  renderContenido();
+}
+
+function limpiarUrl(id) {
+  const urls = getLookerUrls();
+  delete urls[id];
+  localStorage.setItem(LOOKER_URL_KEY, JSON.stringify(urls));
+  renderContenido();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  renderTabs();
+  renderContenido();
+});
+</script>
+<script src="nav.js"></script>
+</body>
+</html>

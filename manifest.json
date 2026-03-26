@@ -1,8 +1,15 @@
 {
-  "name": "CDM Comprobantes",
+  "name": "CDM Gestión Fútbol Mayor",
   "short_name": "CDM",
-  "description": "Comprobantes de pago · Club Deportivo Mitre",
-  "start_url": "./index.html",
+  "description": "Gestión de fútbol mayor · Club Deportivo Mitre",
+  "start_url": "./tesoreria.html",
+  "shortcuts": [
+    { "name": "Tesorería",    "url": "./tesoreria.html",   "description": "Registro de ingresos y egresos" },
+    { "name": "Comprobantes", "url": "./comprobantes.html","description": "Generador de comprobantes" },
+    { "name": "Asistencias",  "url": "./asistencias.html", "description": "Asistencias en prácticas" },
+    { "name": "Partidos",     "url": "./partidos.html",    "description": "Incidencias de partidos" },
+    { "name": "Reportes",     "url": "./reportes.html",    "description": "Reportes y estadísticas" }
+  ],
   "display": "standalone",
   "background_color": "#0f2540",
   "theme_color": "#0f2540",
